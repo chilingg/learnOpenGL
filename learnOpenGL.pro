@@ -1,5 +1,6 @@
 TEMPLATE = app
-CONFIG += console c++11
+CONFIG += c++11
+CONFIG -= console
 CONFIG -= app_bundle
 CONFIG -= qt
 
@@ -15,5 +16,7 @@ DEPENDPATH += $$PWD/../../bin/include
 }
 
 unix{
-
+unix:!macx: LIBS += -lglfw \
+    -ldl #显式加载动态库的动态函数库
 }
+
