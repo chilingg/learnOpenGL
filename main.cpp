@@ -1,6 +1,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+
 #include <iostream>
+#include <cmath>
 
 void framebuffer_size_callback(GLFWwindow *, int width, int height);
 void processInput(GLFWwindow *window);
@@ -21,7 +23,7 @@ int main()
     GLFWwindow *window = glfwCreateWindow(800, 600, "Learn OpenGl", nullptr, nullptr);
     if(window == nullptr)//检查窗口创建是否成功
     {
-        std::cout << "Failed!" << std::endl;
+        std::cerr << "Failed!" << std::endl;
         glfwTerminate();
         return -1;
     }
@@ -31,16 +33,9 @@ int main()
     //初始化GLAD，glfwGetProcAddress是GLAD用来加载系统相关的OpenGL函数指针地址的函数
     if(!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)))
     {
-        std::cout << "Failed to initialize GLAD" << std::endl;
+        std::cerr << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
-
-    //设置窗口（视口）的维度
-    glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);//lower left(-1 ~ 1)
-    //对窗口注册一个回调函数，它在每次窗口大小被调整的时候被调用
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    //设置清空屏幕所用的颜色（底色）
-    glClearColor(0.1f, 0.2f, 0.2f, 1.0f);
 
     //创建一个顶点着色器对象，以ID来引用
     unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -62,7 +57,7 @@ int main()
     {
         //获取错误消息
         glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+        std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
     }
 
     //创建一个片段着色器对象，以ID来引用
@@ -70,9 +65,10 @@ int main()
     //着色器语言GLSL(OpenGL Shading Language)编写片段着色器，存储在字符串中
     const GLchar *fragmentShaderSource = "#version 330 core\n"
             "out vec4 fragColor;\n"
+            "uniform vec4 ourColor;\n"
             "void main()\n"
             "{\n"
-            "fragColor = vec4(1.0f, 0.5f, 0.0f, 1.0f);\n"
+            "fragColor = ourColor;\n"
             "}\0";
     //把片段着色器源码附加到着色器对象上，然后编译它
     glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
@@ -83,7 +79,7 @@ int main()
     {
         //获取错误消息
         glGetShaderInfoLog(fragmentShader, 512, nullptr, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+        std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
     }
 
     //创建一个程序对象
@@ -99,7 +95,14 @@ int main()
     {
         //获取错误消息
         glGetProgramInfoLog(shaderProgram, 512, nullptr, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+        std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+    }
+    //获取uniform位置
+    int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
+    if(vertexColorLocation == -1)
+    {
+        //获取位置失败
+        std::cerr << "No find uniform of ourColor" << std::endl;
     }
 
     //删除已无需使用着色器对象
@@ -137,6 +140,13 @@ int main()
     //显式解绑VAO
     glBindVertexArray(0);
 
+    //设置窗口（视口）的维度
+    glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);//lower left(-1 ~ 1)
+    //对窗口注册一个回调函数，它在每次窗口大小被调整的时候被调用
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    //设置清空屏幕所用的颜色（底色）
+    glClearColor(0.1f, 0.2f, 0.2f, 1.0f);
+
     //渲染循环
     while(!glfwWindowShouldClose(window))
     {
@@ -146,15 +156,24 @@ int main()
 
         //渲染指令----
         glClear(GL_COLOR_BUFFER_BIT);//清屏
-        //指定绘制模式为线框模式，默认为(GL_FRONT_AND_BACK, GL_FILL)
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         //指定着色器程序对象
         glUseProgram(shaderProgram);
+        //每帧变换的明度
+        static float luminosity = 0.0f;
+        static float vary = 0.0001f;
+        if(luminosity <= 1.0f && luminosity >= 0.0f)
+        {
+            luminosity += vary;
+        }
+        else{
+            luminosity >= 1.0f ? luminosity = 1.0f : luminosity = 0.0f;
+            vary *= -1;
+        }
+        glUniform4f(vertexColorLocation, luminosity, luminosity, luminosity, 1.0);
         //指定该VAO中的解析顶点指针和存在的EBO
         glBindVertexArray(VAO);
         //glDrawArrays(GL_TRIANGLES, 0, 6);//VBO内存储顶点顺序绘制
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);//以EBO存储的索引顺序绘制
-        glBindVertexArray(0);
 
         //检查并调用事件，交换缓冲----
         //交换颜色缓冲（它是一个储存着GLFW窗口每一个像素颜色值的大缓冲），它在这一迭代中被用来绘制
