@@ -6,7 +6,8 @@ CONFIG -= qt
 
 SOURCES += \
         main.cpp \
-    glad.c
+    glad.c \
+    mshader.cpp
 
 win32{
 LIBS += -L$$PWD/../../bin/libs/ -lglfw3dll
@@ -19,4 +20,13 @@ unix{
 unix:!macx: LIBS += -lglfw \
     -ldl #显式加载动态库的动态函数库
 }
+
+DISTFILES += \
+    shader/vertex.vert \
+    shader/fragment.frag
+
+HEADERS += \
+    mshader.h
+
+RESOURCES +=
 
