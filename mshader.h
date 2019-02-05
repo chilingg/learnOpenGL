@@ -17,6 +17,7 @@ public:
     MShader(const GLchar* vertexPath, const GLchar* fragmentPath);
     void use();//激活并使用
     void setUniform1F(const string &name, float value) const;
+    void setUniform1I(const string &name, int value) const;
 
     unsigned int shaderProgramID;
 };
@@ -29,6 +30,11 @@ inline void MShader::use()
 inline void MShader::setUniform1F(const std::string &name, float value) const
 {
     glUniform1f(glGetUniformLocation(shaderProgramID, name.c_str()), value);
+}
+
+inline void MShader::setUniform1I(const std::string &name, int value) const
+{
+    glUniform1i(glGetUniformLocation(shaderProgramID, name.c_str()), value);
 }
 
 #endif // MSHADER_H

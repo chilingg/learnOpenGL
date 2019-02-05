@@ -26,7 +26,9 @@ DISTFILES += \
     shader/fragment.frag
 
 HEADERS += \
-    mshader.h
+    mshader.h \
+    stb_image.h \
+    stb_image_implementation.h
 
 RESOURCES +=
 

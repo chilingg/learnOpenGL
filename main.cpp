@@ -5,6 +5,7 @@
 #include <cmath>
 #include <fstream>
 #include "mshader.h"
+#include "stb_image_implementation.h"
 
 void framebuffer_size_callback(GLFWwindow *, int width, int height);
 void processInput(GLFWwindow *window);
@@ -42,20 +43,60 @@ int main()
     MShader myShader("../learnOpenGL/shader/vertex.vert",
                      "../learnOpenGL/shader/fragment.frag");
 
+    //生成纹理ID并绑定到2D纹理
+    unsigned int texture[2];
+    glGenTextures(2, texture);
+    const char *file[2] = {"../learnOpenGL/texture/container.jpg",
+                           "../learnOpenGL/texture/awesomeface.jpg"};
+    stbi_set_flip_vertically_on_load(true);
+    for(unsigned i = 0; i < 2; ++i)
+    {
+        glActiveTexture(GL_TEXTURE0 + i);
+        glBindTexture(GL_TEXTURE_2D, texture[i]);
+        //为当前绑定纹理对象设置环绕、过滤方式
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        //使用stb_image加载图片
+        int width, height, nrChannels;//宽、高、颜色通道
+        unsigned char *data = stbi_load(file[i], &width, &height, &nrChannels, 0);
+        if(data)
+        {
+            //依据图片生成纹理，其参数为（纹理目标，指定多级渐远纹理级别，纹理存储模式，图宽，高，0，图片模式，图数据类型，图数据）
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+            glGenerateMipmap(GL_TEXTURE_2D);//自动生成所以需要的多级渐远纹理
+        }
+        else{
+            std::cerr << "Failed to load texture" << std::endl;
+        }
+        stbi_image_free(data);//释放图像内存
+    }
+
+    //指定着色器程序对象
+    myShader.use();
+    //glUniform1i(glGetUniformLocation(myShader.shaderProgramID, "texture1"), 0); // 手动设置
+    myShader.setUniform1I("ourTexture1", 0);
+    myShader.setUniform1I("ourTexture2", 1);
+
     //以标准化设备坐标指定多个顶点
     float vertices[] = {
-        0.8f, 0.5f, 0.0f,//Right-top point and color
-        1.0f, 0.0f, 0.0f,
-        0.0f, 0.5f, 0.0f,//Middle-top point and color
-        0.0f, 1.0f, 0.0f,
-        -0.8f, 0.5f, 0.0f,//Left-top point and color
-        0.0f, 0.0f, 1.0f,
-        0.0f, -0.5f, 0.0f,//Middle-bottom point and color
-        1.0f, 1.0f, 0.0f
+        //right-top
+        0.5f, 0.5f, 0.0f,//vertex position
+        1.0f, 1.0f,//texture position
+        //right-buttom
+        0.5f, -0.5f, 0.0f,
+        1.0f, 0.0f,
+        //left-top
+        -0.5f, 0.5f, 0.0f,
+        0.0f, 1.0f,
+        //left-buttom
+        -0.5f, -0.5f, 0.0f,
+        0.0f, 0.0f,
     };
     //指定绘制的索引顺序
     unsigned int indices[] = {
-        0, 1, 3, // 第一个三角形
+        0, 1, 2, // 第一个三角形
         1, 2, 3  // 第二个三角形
     };
     //一个以缓冲ID生成一个VBO和VAO、EBO对象，第一个参数为第二参数指向多少个连续对象
@@ -72,9 +113,9 @@ int main()
     //索引数据复制到缓冲的内存中
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
     //告诉OpenGL该如何解析顶点数据（应用到逐个顶点属性上）
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof (float), nullptr);//位置属性
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5*sizeof (float), nullptr);//位置属性
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6*sizeof (float), reinterpret_cast<void*>(3 * sizeof (float)));//颜色属性
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5*sizeof (float), reinterpret_cast<void*>(3 * sizeof (float)));//纹理属性
     glEnableVertexAttribArray(1);
     //显式解绑VAO
     glBindVertexArray(0);
@@ -95,8 +136,6 @@ int main()
 
         //渲染指令----
         glClear(GL_COLOR_BUFFER_BIT);//清屏
-        //指定着色器程序对象
-        myShader.use();
         //指定该VAO中的解析顶点指针和存在的EBO
         glBindVertexArray(VAO);
         //glDrawArrays(GL_TRIANGLES, 0, 6);//VBO内存储顶点顺序绘制
