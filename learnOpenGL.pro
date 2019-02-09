@@ -28,7 +28,9 @@ DISTFILES += \
 HEADERS += \
     mshader.h \
     stb_image.h \
-    stb_image_implementation.h
+    stb_image_implementation.h \
+    mvec.h \
+    mmatrix.h
 
 RESOURCES +=
 

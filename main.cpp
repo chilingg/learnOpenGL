@@ -6,13 +6,14 @@
 #include <fstream>
 #include "mshader.h"
 #include "stb_image_implementation.h"
+#include "mmatrix.h"
+
+//Window size
+constexpr unsigned SCR_WIDTH = 800;
+constexpr unsigned SCR_HEIGHT = 600;
 
 void framebuffer_size_callback(GLFWwindow *, int width, int height);
 void processInput(GLFWwindow *window);
-
-//Windows size
-constexpr unsigned SCR_WIDTH = 800;
-constexpr unsigned SCR_HEIGHT = 600;
 
 int main()
 {
@@ -126,6 +127,11 @@ int main()
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     //设置清空屏幕所用的颜色（底色）
     glClearColor(0.1f, 0.2f, 0.2f, 1.0f);
+
+    MVec4 vec{1.0f, 0.0f, 0.0f, 1.0f};
+    MMat4 trans;
+    translate(trans, {1.0f, 1.0f, 0.0f});
+    vec = trans * vec;
 
     //渲染循环
     while(!glfwWindowShouldClose(window))
