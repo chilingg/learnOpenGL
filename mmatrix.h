@@ -1,37 +1,40 @@
 #ifndef MMATRIX_H
 #define MMATRIX_H
 
-#include <utility>
 #include <cstddef>
 #include "mvec.h"
 
 class MMat4
 {
-    friend MMat4 translate(MMat4 mat, const MVec3 &vec3);
-    friend MVec4 operator*(MMat4 &mat4, MVec4 &vec4);
+    friend MMat4 translate(const MMat4 &mat, const MVec3 &vec3);
+    friend MVec4 operator*(const MMat4 &mat4, const MVec4 &vec4);
+    friend MVec4 operator*(const MVec4 &vec4, const MMat4 &mat4);
 
 public:
-    MMat4(float f = 0.0f);
+    MMat4(const float all = 0.0f);
     MMat4(const MMat4 &m);
-    MMat4(MMat4 &&m);
+    MMat4 &operator*=(const MMat4 &mat4);
 
     auto getMatrixPtr() const -> const float(*)[4];
     void identityMatrix();
 
 private:
-    float (*matrix)[4];
+    float matrix[4][4];
 };
 
-inline MMat4 translate(MMat4 mat, const MVec3 &vec3)
+inline MMat4 translate(const MMat4 &mat, const MVec3 &vec3)
 {
-    mat.matrix[3][0] += vec3.x;
-    mat.matrix[3][1] += vec3.y;
-    mat.matrix[3][2] += vec3.z;
+    MMat4 idt;
+    idt.identityMatrix();
+    idt.matrix[3][0] += vec3.x;
+    idt.matrix[3][1] += vec3.y;
+    idt.matrix[3][2] += vec3.z;
 
-    return mat;
+    idt *= mat;
+    return idt;
 }
 
-MVec4 operator*(MMat4 &mat4, MVec4 &vec4)
+MVec4 operator*(const MMat4 &mat4, const MVec4 &vec4)
 {
     float x = vec4.x * mat4.matrix[0][0]
             + vec4.y * mat4.matrix[1][0]
@@ -56,33 +59,47 @@ MVec4 operator*(MMat4 &mat4, MVec4 &vec4)
     return {x, y, z, w};
 }
 
-MMat4::MMat4(float f):
-    matrix(new float[4][4])
+inline MVec4 operator*(const MVec4 &vec4, const MMat4 &mat4)
+{
+    return operator*(mat4, vec4);
+}
+
+MMat4::MMat4(const float all)
 {
     for(size_t i = 0; i < 4; ++i)
     {
         for(size_t j = 0; j < 4; ++j)
         {
-            matrix[i][j] = f;
+            matrix[i][j] = all;
         }
     }
 }
 
 MMat4::MMat4(const MMat4 &m)
 {
-    auto p = m.getMatrixPtr();
     for(size_t i = 0; i < 4; ++i)
     {
         for(size_t j = 0; j < 4; ++j)
         {
-            matrix[i][j] = p[i][j];
+            matrix[i][j] = m.matrix[i][j];
         }
     }
 }
 
-MMat4::MMat4(MMat4 &&m)
+MMat4 &MMat4::operator*=(const MMat4 &mat4)
 {
-    this->matrix = m.matrix;
+    for(size_t i = 0; i < 4; ++i)
+    {
+        for(size_t j = 0; j < 4; ++j)
+        {
+            this->matrix[i][j] = this->matrix[i][0] * mat4.matrix[0][j]
+                    + this->matrix[i][1] * mat4.matrix[1][j]
+                    + this->matrix[i][2] * mat4.matrix[2][j]
+                    + this->matrix[i][3] * mat4.matrix[3][j];
+        }
+    }
+
+    return *this;
 }
 
 inline auto MMat4::getMatrixPtr() const -> const float(*)[4]
@@ -94,7 +111,13 @@ void MMat4::identityMatrix()
 {
     for(size_t i = 0; i < 4; ++i)
     {
-        matrix[i][i] = 1;
+        for(size_t j = 0; j < 4; ++j)
+        {
+            if(i != j)
+                matrix[i][j] = 0;
+            else
+                matrix[i][j] = 1;
+        }
     }
 }
 

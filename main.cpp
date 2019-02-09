@@ -130,8 +130,11 @@ int main()
 
     MVec4 vec{1.0f, 0.0f, 0.0f, 1.0f};
     MMat4 trans;
-    translate(trans, {1.0f, 1.0f, 0.0f});
+    trans.identityMatrix();
+    trans = translate(trans, {1.0f, 1.0f, 0.0f});
     vec = trans * vec;
+    trans *= trans;
+    std::cout << vec.x << vec.y << vec.z << vec.w << std::endl;
 
     //渲染循环
     while(!glfwWindowShouldClose(window))
