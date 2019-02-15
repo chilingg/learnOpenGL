@@ -7,7 +7,8 @@ CONFIG -= qt
 SOURCES += \
         main.cpp \
     glad.c \
-    mshader.cpp
+    mshader.cpp \
+    mmatrix.cpp
 
 win32{
 LIBS += -L$$PWD/../../bin/libs/ -lglfw3dll

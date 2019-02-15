@@ -14,6 +14,7 @@ constexpr unsigned SCR_HEIGHT = 600;
 
 void framebuffer_size_callback(GLFWwindow *, int width, int height);
 void processInput(GLFWwindow *window);
+void printMat(const MMat4& mat);
 
 int main()
 {
@@ -24,7 +25,7 @@ int main()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);//use核心模式
 
     //窗口对象，存放了所有和窗口相关的数据
-    GLFWwindow *window = glfwCreateWindow(800, 600, "Learn OpenGl", nullptr, nullptr);
+    GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Learn OpenGl", nullptr, nullptr);
     if(window == nullptr)//检查窗口创建是否成功
     {
         std::cerr << "Failed!" << std::endl;
@@ -128,13 +129,12 @@ int main()
     //设置清空屏幕所用的颜色（底色）
     glClearColor(0.1f, 0.2f, 0.2f, 1.0f);
 
-    MVec4 vec{1.0f, 0.0f, 0.0f, 1.0f};
-    MMat4 trans;
-    trans.identityMatrix();
-    trans = translate(trans, {1.0f, 1.0f, 0.0f});
-    vec = trans * vec;
-    trans *= trans;
-    std::cout << vec.x << vec.y << vec.z << vec.w << std::endl;
+    MMat4 trans = rotation(makeIdentityMatrix(), {0.0f, 0.0f, 0.0f});
+    int transLoc = glGetUniformLocation(myShader.shaderProgramID, "transform");
+    if(transLoc != -1)
+        glUniformMatrix4fv(transLoc, 1, GL_TRUE, trans.matrixPtr());
+    else
+        std::cerr << "No find uniform location" << std::endl;
 
     //渲染循环
     while(!glfwWindowShouldClose(window))
@@ -145,6 +145,9 @@ int main()
 
         //渲染指令----
         glClear(GL_COLOR_BUFFER_BIT);//清屏
+        //更新变换矩阵
+        MMat4 trans = rotation(makeIdentityMatrix(), {0.0f, static_cast<float>(glfwGetTime()), 0.0f});
+        glUniformMatrix4fv(transLoc, 1, GL_TRUE, trans.matrixPtr());
         //指定该VAO中的解析顶点指针和存在的EBO
         glBindVertexArray(VAO);
         //glDrawArrays(GL_TRIANGLES, 0, 6);//VBO内存储顶点顺序绘制

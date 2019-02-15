@@ -29,12 +29,20 @@ inline void MShader::use()
 
 inline void MShader::setUniform1F(const std::string &name, float value) const
 {
-    glUniform1f(glGetUniformLocation(shaderProgramID, name.c_str()), value);
+    int loc = glGetUniformLocation(shaderProgramID, name.c_str());
+    if(loc != -1)
+        glUniform1f(loc, value);
+    else
+        std::cerr << "No find uniform location of the " << name.c_str() << std::endl;
 }
 
 inline void MShader::setUniform1I(const std::string &name, int value) const
 {
-    glUniform1i(glGetUniformLocation(shaderProgramID, name.c_str()), value);
+    int loc = glGetUniformLocation(shaderProgramID, name.c_str());
+    if(loc != -1)
+        glUniform1i(loc, value);
+    else
+        std::cerr << "No find uniform location of the " << name.c_str() << std::endl;
 }
 
 #endif // MSHADER_H
