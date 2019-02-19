@@ -129,12 +129,23 @@ int main()
     //设置清空屏幕所用的颜色（底色）
     glClearColor(0.1f, 0.2f, 0.2f, 1.0f);
 
-    MMat4 trans = rotation(makeIdentityMatrix(), {0.0f, 0.0f, 0.0f});
+    MMat4 trans = translate(makeIdentityMatrix(), {0.5f, 0.0f, 0.0f});
     int transLoc = glGetUniformLocation(myShader.shaderProgramID, "transform");
     if(transLoc != -1)
         glUniformMatrix4fv(transLoc, 1, GL_TRUE, trans.matrixPtr());
     else
         std::cerr << "No find uniform location" << std::endl;
+    MMat4 projection = projective(200.0f);
+    projection.identityMatrix();
+    int proLoc = glGetUniformLocation(myShader.shaderProgramID, "projection");
+    if(proLoc != -1)
+        glUniformMatrix4fv(proLoc, 1, GL_TRUE, projection.matrixPtr());
+    else
+        std::cerr << "No find uniform location" << std::endl;
+    MVec4 tt = {0.5f, 0.5f, 0.0f, 1.0f};
+    tt = trans * tt;
+    std::cout << tt.x << tt.y << tt.z << tt.w << std::endl;
+    printMat(trans);
 
     //渲染循环
     while(!glfwWindowShouldClose(window))
@@ -146,8 +157,8 @@ int main()
         //渲染指令----
         glClear(GL_COLOR_BUFFER_BIT);//清屏
         //更新变换矩阵
-        MMat4 trans = rotation(makeIdentityMatrix(), {0.0f, static_cast<float>(glfwGetTime()), 0.0f});
-        glUniformMatrix4fv(transLoc, 1, GL_TRUE, trans.matrixPtr());
+        //MMat4 trans = rotation(makeIdentityMatrix(), {0.0f, static_cast<float>(glfwGetTime()), 0.0f});
+        //glUniformMatrix4fv(transLoc, 1, GL_TRUE, trans.matrixPtr());
         //指定该VAO中的解析顶点指针和存在的EBO
         glBindVertexArray(VAO);
         //glDrawArrays(GL_TRIANGLES, 0, 6);//VBO内存储顶点顺序绘制

@@ -13,26 +13,26 @@ MMat4 translate(const MMat4 &mat, const MVec3 &vec3)
     return idt * mat;
 }
 
-MVec4 operator*(const MVec4 &vec4, const MMat4 &mat4)
+MVec4 operator*(const MMat4 &mat4, const MVec4 &vec4)
 {
     float x = vec4.x * mat4.matrix[0][0]
-            + vec4.y * mat4.matrix[1][0]
-            + vec4.z * mat4.matrix[2][0]
-            + vec4.w * mat4.matrix[3][0];
+            + vec4.y * mat4.matrix[0][1]
+            + vec4.z * mat4.matrix[0][2]
+            + vec4.w * mat4.matrix[0][3];
 
-    float y = vec4.x * mat4.matrix[0][1]
+    float y = vec4.x * mat4.matrix[1][0]
             + vec4.y * mat4.matrix[1][1]
-            + vec4.z * mat4.matrix[2][1]
-            + vec4.w * mat4.matrix[3][1];
+            + vec4.z * mat4.matrix[1][2]
+            + vec4.w * mat4.matrix[1][3];
 
-    float z = vec4.x * mat4.matrix[0][2]
-            + vec4.y * mat4.matrix[1][2]
+    float z = vec4.x * mat4.matrix[2][0]
+            + vec4.y * mat4.matrix[2][1]
             + vec4.z * mat4.matrix[2][2]
-            + vec4.w * mat4.matrix[3][2];
+            + vec4.w * mat4.matrix[2][3];
 
-    float w = vec4.x * mat4.matrix[0][3]
-            + vec4.y * mat4.matrix[1][3]
-            + vec4.z * mat4.matrix[2][3]
+    float w = vec4.x * mat4.matrix[3][0]
+            + vec4.y * mat4.matrix[3][1]
+            + vec4.z * mat4.matrix[3][2]
             + vec4.w * mat4.matrix[3][3];
 
     return {x, y, z, w};
@@ -133,6 +133,16 @@ MMat4 scale(const MMat4 &mat, const MVec3 &vec3)
     }
 
     return temp * mat;
+}
+
+MMat4 projective(float f)
+{
+    MMat4 temp = makeIdentityMatrix();
+
+    temp.matrix[2][2] = 0;
+    temp.matrix[3][2] = (-1 - f) / f;
+
+    return temp;
 }
 
 MMat4 MMat4::operator*(const MMat4 &mat4) const

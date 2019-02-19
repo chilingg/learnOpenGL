@@ -11,7 +11,8 @@ class MMat4
     friend MMat4 translate(const MMat4 &mat, const MVec3 &vec3);
     friend MMat4 rotation(const MMat4 &mat, const MVec3 &vec3);
     friend MMat4 scale(const MMat4 &mat, const MVec3 &vec3);
-    friend MVec4 operator*(const MVec4 &vec4, const MMat4 &mat4);
+    friend MMat4 projective(float f);
+    friend MVec4 operator*(const MMat4 &mat4, const MVec4 &vec4);
 
 public:
     MMat4(const float all = 0.0f);
@@ -27,6 +28,10 @@ private:
     float matrix[4][4];
 };
 
+MMat4 translate(const MMat4 &mat, const MVec3 &vec3);
+MMat4 rotation(const MMat4 &mat, const MVec3 &vec3);
+MMat4 scale(const MMat4 &mat, const MVec3 &vec3);
+MMat4 projective(float f);
 void printMat(const MMat4& mat);
 
 inline auto MMat4::operator[](const size_t &t) const -> const float(&) [4]
