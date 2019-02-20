@@ -6,9 +6,9 @@ MMat4 translate(const MMat4 &mat, const MVec3 &vec3)
 {
     MMat4 idt;
     idt.identityMatrix();
-    idt.matrix[3][0] += vec3.x;
-    idt.matrix[3][1] += vec3.y;
-    idt.matrix[3][2] += vec3.z;
+    idt.matrix[0][3] += vec3.x;
+    idt.matrix[1][3] += vec3.y;
+    idt.matrix[2][3] += vec3.z;
 
     return idt * mat;
 }
