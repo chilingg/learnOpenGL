@@ -140,7 +140,7 @@ MMat4 projective(float f)
     MMat4 temp = makeIdentityMatrix();
 
     temp.matrix[2][2] = 0;
-    temp.matrix[3][2] = (-1 - f) / f;
+    temp.matrix[3][2] = -1 / f;
 
     return temp;
 }

@@ -129,13 +129,21 @@ int main()
     //设置清空屏幕所用的颜色（底色）
     glClearColor(0.1f, 0.2f, 0.2f, 1.0f);
 
-    MMat4 trans = translate(makeIdentityMatrix(), {0.0f, 0.0f, 0.1f});
-    int transLoc = glGetUniformLocation(myShader.shaderProgramID, "transform");
+    MMat4 trans = rotation(makeIdentityMatrix(), {radians(-0.0f), 0.0f, 0.0f});
+    int transLoc = glGetUniformLocation(myShader.shaderProgramID, "model");
     if(transLoc != -1)
         glUniformMatrix4fv(transLoc, 1, GL_TRUE, trans.matrixPtr());
     else
         std::cerr << "No find uniform location" << std::endl;
-    MMat4 projection = projective(0.2f);
+
+    MMat4 view = translate(makeIdentityMatrix(), {0.0f, 0.0f, -0.0f});
+    int viewLoc = glGetUniformLocation(myShader.shaderProgramID, "view");
+    if(viewLoc != -1)
+        glUniformMatrix4fv(viewLoc, 1, GL_TRUE, view.matrixPtr());
+    else
+        std::cerr << "No find uniform location" << std::endl;
+
+    MMat4 projection = projective(2.0f);
     int proLoc = glGetUniformLocation(myShader.shaderProgramID, "projection");
     if(proLoc != -1)
         glUniformMatrix4fv(proLoc, 1, GL_TRUE, projection.matrixPtr());
