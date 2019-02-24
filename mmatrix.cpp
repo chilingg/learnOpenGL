@@ -1,6 +1,5 @@
 #include "mmatrix.h"
 #include <cmath>
-#include <iostream>
 
 MMat4 translate(const MMat4 &mat, const MVec3 &vec3)
 {
@@ -160,17 +159,5 @@ void MMat4::identityMatrix()
             else
                 matrix[i][j] = 1;
         }
-    }
-}
-
-void printMat(const MMat4& mat)
-{
-    for(size_t i = 0; i < 4; ++i)
-    {
-        std::cout << mat[i][0] << ' '
-                << mat[i][1] << ' '
-                << mat[i][2] << ' '
-                << mat[i][3] << ' '
-                << std::endl;
     }
 }

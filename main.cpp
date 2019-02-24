@@ -17,7 +17,6 @@ constexpr unsigned SCR_HEIGHT = 600;
 
 void framebuffer_size_callback(GLFWwindow *, int width, int height);
 void processInput(GLFWwindow *window);
-void printMat(const MMat4& mat);
 
 int main()
 {
@@ -153,6 +152,24 @@ int main()
         MVec3{-1.3f,  1.0f, -1.5f}
       };
 
+    glm::mat4 glmRotate = glm::mat4(1.0f);
+    //glmRotate = glm::scale(glmRotate, {0.5f, 0.5f, 0.5f});
+    glmRotate = glm::rotate(glmRotate, glm::radians(45.0f), {0.0f, 0.0f, 1.0f});
+    glmRotate = glm::translate(glmRotate, {0.0f, -3.0f, 0.0f});
+    printMat(glmRotate, false);
+    glm::vec4 teGml(1.0f, 1.0f, 0.0f, 1.0f);
+    teGml = glmRotate * teGml;
+    std::cout << teGml.x << ',' << teGml.y << ',' << teGml.z << ',' << teGml.w << "---------" << std::endl;
+
+    MMat4 mrotate = makeIdentityMatrix();
+    //mrotate = scale(mrotate, {0.5f, 0.5f, 0.5f});
+    mrotate = rotation(mrotate, {0.0f, 0.0f, glm::radians(45.0f)});
+    mrotate = translate(mrotate, {0.0f, -3.0f, 0.0f});
+    printMat(mrotate, true);
+    MVec4 teM = {1.0f, 1.0f, 0.0f, 1.0f};
+    teM = mrotate * teM;
+    std::cout << teM.x << ',' << teM.y << ',' << teM.z << ',' << teM.w << "---------" << std::endl;
+
     //渲染循环
     while(!glfwWindowShouldClose(window))
     {
@@ -167,11 +184,16 @@ int main()
         for(size_t i = 0; i < 10; i++)
         {
             //更新变换矩阵
-            MMat4 model = scale(makeIdentityMatrix(), {0.5f, 0.5f, 0.5f});
+            /*MMat4 model = scale(makeIdentityMatrix(), {0.5f, 0.5f, 0.5f});
             model = rotation(model, {0.0f, static_cast<float>(glfwGetTime() * i), 0.0f});
+            model = translate(model, {0.0f, 0.0f, -3.5f});*
+            glm::mat4 model = glm::scale(glm::mat4(1.0f), {0.5f, 0.5f, 0.5f});
+            model = glm::rotate(model, glm::radians(static_cast<float>(glfwGetTime() * i)), {0.0f, 1.0f, 0.0f});
+            model = glm::translate(model, {0.0f, 0.0f, -3.0f});
             int transLoc = glGetUniformLocation(myShader.shaderProgramID, "model");
             if(transLoc != -1)
-                glUniformMatrix4fv(transLoc, 1, GL_TRUE, model.matrixPtr());
+                //glUniformMatrix4fv(transLoc, 1, GL_TRUE, model.matrixPtr());
+                glUniformMatrix4fv(transLoc, 1, GL_FALSE, glm::value_ptr(model));
             else
                 std::cerr << "No find uniform location" << std::endl;
 
@@ -183,16 +205,16 @@ int main()
             else
                 std::cerr << "No find uniform location" << std::endl;
 
-            MMat4 projection = projective(1.0f);
-            /*glm::mat4 projection = glm::perspective(glm::radians(45.0f),
+            //MMat4 projection = projective(1.0f);
+            glm::mat4 projection = glm::perspective(glm::radians(45.0f),
                                                     static_cast<float>(SCR_WIDTH/SCR_HEIGHT),
-                                                    0.1f, 100.0f);*/
+                                                    0.1f, 100.0f);
             int proLoc = glGetUniformLocation(myShader.shaderProgramID, "projection");
             if(proLoc != -1)
-                glUniformMatrix4fv(proLoc, 1, GL_TRUE, projection.matrixPtr());
-                //glUniformMatrix4fv(proLoc, 1, GL_FALSE, glm::value_ptr(projection));
+                //glUniformMatrix4fv(proLoc, 1, GL_TRUE, projection.matrixPtr());
+                glUniformMatrix4fv(proLoc, 1, GL_FALSE, glm::value_ptr(projection));
             else
-                std::cerr << "No find uniform location" << std::endl;
+                std::cerr << "No find uniform location" << std::endl;*/
 
             glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(unsigned), GL_UNSIGNED_INT, nullptr);//以EBO存储的索引顺序绘制三角形
         }
