@@ -7,8 +7,13 @@ uniform mat4 model;//变换矩阵
 uniform mat4 view;
 uniform mat4 projection;//投影矩阵
 
+vec4 gl_TempPosition;
+
 void main(void)
 {
-    gl_Position = projection * view * model * vec4(aPos, 1.0);
+    gl_TempPosition = view * model * vec4(aPos, 1.0);
+    gl_Position = projection * gl_TempPosition;
+    gl_Position.z = -gl_TempPosition.z;
+
     TexCoord = aTexCoord;
 }
