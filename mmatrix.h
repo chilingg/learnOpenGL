@@ -13,7 +13,7 @@ class MMat4
     friend MMat4 rotation(const MMat4 &mat, const MVec3 &vec3);
     friend MMat4 scale(const MMat4 &mat, const MVec3 &vec3);
     friend MMat4 projective(float f);
-    friend MMat4 lookAt(MVec3 targetPos);
+    friend MMat4 camera(const MMat4 &mat, const MVec3 &vec3);
     friend MVec4 operator*(const MMat4 &mat4, const MVec4 &vec4);
 
 public:
@@ -33,7 +33,8 @@ private:
 MMat4 translate(const MMat4 &mat, const MVec3 &vec3);
 MMat4 rotation(const MMat4 &mat, const MVec3 &vec3);
 MMat4 scale(const MMat4 &mat, const MVec3 &vec3);
-MMat4 lookAt(MVec3 targetPos);
+MMat4 camera(const MMat4 &mat, const MVec3 &vec3);
+MMat4 lookAt(const MMat4 &mat, MVec3 targetPos);
 MMat4 projective(float f);
 
 template <typename T>

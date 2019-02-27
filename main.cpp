@@ -169,7 +169,7 @@ int main()
             MMat4 model = makeIdentityMatrix();
             //model = scale(model, {0.5f, 0.5f, 0.5f});
             //model = rotation(model, {0.0f, i*20.0f, 0.0f});
-            model = translate(model, {0.0f, 0.0f, -1.0f});
+            model = translate(model, {0.0f, 0.0f, 0.0f});
             model = translate(model, cubePositions[i]);
             //glm::mat4 model = glm::scale(glm::mat4(1.0f), {0.5f, 0.5f, 0.5f});
             //model = glm::rotate(model, glm::radians(static_cast<float>(glfwGetTime() * i)), {0.0f, 1.0f, 0.0f});
@@ -181,8 +181,9 @@ int main()
             else
                 std::cerr << "No find uniform location" << std::endl;
 
-            MMat4 view = lookAt({0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f});
-            //view = rotation(view, {0.0f, 0.0f, radians(60.0f)});
+            MMat4 view = makeIdentityMatrix();
+            view = camera(view, {1.5f, 1.5f, 0.0f});
+            view = rotation(view, {radians(90.0f), radians(135.0f), 0.0f});
             int viewLoc = glGetUniformLocation(myShader.shaderProgramID, "view");
             if(viewLoc != -1)
                 glUniformMatrix4fv(viewLoc, 1, GL_TRUE, view.matrixPtr());

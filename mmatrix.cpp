@@ -144,27 +144,36 @@ MMat4 projective(float f)
     return temp;
 }
 
-MMat4 lookAt(MVec3 target)
+MMat4 lookAt(const MMat4 &mat, MVec3 target)
 {
     MMat4 lookAtMat = makeIdentityMatrix();
 
-    //避免目标为零
-    MVec4 targetPos = {target.x+0.00001f, target.y+0.00001f, target.z+0.00001f, 1.0f};
+    MVec4 targetPos = {target.x, target.y, target.z, 1.0f};
+    targetPos = mat * targetPos;
+    std::cout << '\n' << targetPos.x << targetPos.y << targetPos.z << std::endl;
 
     float rotateX = 0.0f;
     float rotateY = 0.0f;
-    float rotateZ = 0.0f;
     if(targetPos.y != 0.0f)
     {
-        rotateX = atanf(targetPos.y / targetPos.z);
+        rotateX = radians(90.0f) - atanf(targetPos.z / targetPos.y);
+        std::cout << "rotateX\t" << degrees(rotateX) << std::endl;
     }
-    else{
-        rotateX = atanf(targetPos.y / targetPos.z);
-        //targetPos = rotation(cameraMat, {0.0f, rotateX, 0.0f}) * targetPos;
-        rotateY = -atanf(targetPos.x / targetPos.z);
-    }
+    targetPos = rotation(lookAtMat, {rotateX, 0.0f, 0.0f}) * targetPos;
+    std::cout << targetPos.x << targetPos.y << targetPos.z << std::endl;
 
-    lookAtMat = rotation(lookAtMat, {rotateX, rotateY, rotateZ});
+    if(targetPos.x != 0.0f)
+    {
+        rotateY = radians(90.0f) + atanf(targetPos.z / targetPos.x);
+        std::cout << "rotateY\t" << degrees(rotateY) << std::endl;
+    }
+    targetPos = rotation(lookAtMat, {0.0f, rotateY, 0.0f}) * targetPos;
+    std::cout << targetPos.x << targetPos.y << targetPos.z << std::endl;
+
+    lookAtMat = rotation(mat, {rotateX, rotateY, 0.0f});
+    if(targetPos.z > 0.0f)
+        lookAtMat = rotation(mat, {0.0f, radians(180.0f), 0.0f});
+    //std::cout << targetPos.x << targetPos.y << targetPos.z << std::endl;
 
     return lookAtMat;
 }
@@ -187,4 +196,15 @@ void MMat4::identityMatrix()
                 matrix[i][j] = 1;
         }
     }
+}
+
+MMat4 camera(const MMat4 &mat, const MVec3 &vec3)
+{
+    MMat4 idt;
+    idt.identityMatrix();
+    idt.matrix[0][3] -= vec3.x;
+    idt.matrix[1][3] -= vec3.y;
+    idt.matrix[2][3] -= vec3.z;
+
+    return idt * mat;
 }
