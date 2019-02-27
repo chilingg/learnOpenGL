@@ -13,6 +13,7 @@ class MMat4
     friend MMat4 rotation(const MMat4 &mat, const MVec3 &vec3);
     friend MMat4 scale(const MMat4 &mat, const MVec3 &vec3);
     friend MMat4 projective(float f);
+    friend MMat4 lookAt(MVec3 targetPos);
     friend MVec4 operator*(const MMat4 &mat4, const MVec4 &vec4);
 
 public:
@@ -32,30 +33,29 @@ private:
 MMat4 translate(const MMat4 &mat, const MVec3 &vec3);
 MMat4 rotation(const MMat4 &mat, const MVec3 &vec3);
 MMat4 scale(const MMat4 &mat, const MVec3 &vec3);
+MMat4 lookAt(MVec3 targetPos);
 MMat4 projective(float f);
 
 template <typename T>
-void printMat(const T& mat, bool trans)
+void printMat(const T& mat, bool trans = false)
 {
     if(trans)
     {
         for(size_t i = 0; i < 4; ++i)
         {
-            std::cout << mat[i][0] << ' '
-                    << mat[i][1] << ' '
-                    << mat[i][2] << ' '
-                    << mat[i][3] << ' '
-                    << std::endl;
+            std::cout << mat[0][i] << ','
+                    << mat[1][i] << ','
+                    << mat[2][i] << ','
+                    << mat[3][i] << std::endl;
         }
     } else
     {
         for(size_t i = 0; i < 4; ++i)
         {
-            std::cout << mat[0][i] << ' '
-                    << mat[1][i] << ' '
-                    << mat[2][i] << ' '
-                    << mat[3][i] << ' '
-                    << std::endl;
+            std::cout << mat[i][0] << ','
+                    << mat[i][1] << ','
+                    << mat[i][2] << ','
+                    << mat[i][3] << std::endl;
         }
     }
 }
@@ -80,6 +80,11 @@ inline MMat4 makeIdentityMatrix()
 inline float radians(float degrees)
 {
     return degrees / 180.0f * M_PI_F;
+}
+
+inline float degrees(float radians)
+{
+    return radians / M_PI_F * 180.0f;
 }
 
 #endif // MMATRIX_H

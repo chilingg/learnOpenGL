@@ -61,14 +61,15 @@ MMat4::MMat4(const MMat4 &m)
 
 MMat4 &MMat4::operator*=(const MMat4 &mat4)
 {
+    MMat4 temp(*this);
     for(size_t i = 0; i < 4; ++i)
     {
         for(size_t j = 0; j < 4; ++j)
         {
-            this->matrix[i][j] = this->matrix[i][0] * mat4.matrix[0][j]
-                    + this->matrix[i][1] * mat4.matrix[1][j]
-                    + this->matrix[i][2] * mat4.matrix[2][j]
-                    + this->matrix[i][3] * mat4.matrix[3][j];
+            this->matrix[i][j] = temp.matrix[i][0] * mat4.matrix[0][j]
+                    + temp.matrix[i][1] * mat4.matrix[1][j]
+                    + temp.matrix[i][2] * mat4.matrix[2][j]
+                    + temp.matrix[i][3] * mat4.matrix[3][j];
         }
     }
 
@@ -82,30 +83,30 @@ MMat4 rotation(const MMat4 &mat, const MVec3 &vec3)
     if(vec3.x != 0.0f)
     {
         MMat4 rota = makeIdentityMatrix();
-        rota.matrix[1][1] = cos(vec3.x);
-        rota.matrix[1][2] = -sin(vec3.x);
-        rota.matrix[2][1] = sin(vec3.x);
-        rota.matrix[2][2] = cos(vec3.x);
+        rota.matrix[1][1] = cosf(vec3.x);
+        rota.matrix[1][2] = -sinf(vec3.x);
+        rota.matrix[2][1] = sinf(vec3.x);
+        rota.matrix[2][2] = cosf(vec3.x);
         temp = rota * temp;
     }
 
     if(vec3.y != 0.0f)
     {
         MMat4 rota = makeIdentityMatrix();
-        rota.matrix[0][0] = cos(vec3.y);
-        rota.matrix[2][0] = -sin(vec3.y);
-        rota.matrix[0][2] = sin(vec3.y);
-        rota.matrix[2][2] = cos(vec3.y);
+        rota.matrix[0][0] = cosf(vec3.y);
+        rota.matrix[2][0] = -sinf(vec3.y);
+        rota.matrix[0][2] = sinf(vec3.y);
+        rota.matrix[2][2] = cosf(vec3.y);
         temp = rota * temp;
     }
 
     if(vec3.z != 0.0f)
     {
         MMat4 rota = makeIdentityMatrix();
-        rota.matrix[0][0] = cos(vec3.z);
-        rota.matrix[0][1] = -sin(vec3.z);
-        rota.matrix[1][0] = sin(vec3.z);
-        rota.matrix[1][1] = cos(vec3.z);
+        rota.matrix[0][0] = cosf(vec3.z);
+        rota.matrix[0][1] = -sinf(vec3.z);
+        rota.matrix[1][0] = sinf(vec3.z);
+        rota.matrix[1][1] = cosf(vec3.z);
         temp = rota * temp;
     }
 
@@ -137,9 +138,35 @@ MMat4 scale(const MMat4 &mat, const MVec3 &vec3)
 MMat4 projective(float f)
 {
     MMat4 temp = makeIdentityMatrix();
+    temp.matrix[2][2] = -1;
     temp.matrix[3][2] = -1 / f;
 
     return temp;
+}
+
+MMat4 lookAt(MVec3 target)
+{
+    MMat4 lookAtMat = makeIdentityMatrix();
+
+    //避免目标为零
+    MVec4 targetPos = {target.x+0.00001f, target.y+0.00001f, target.z+0.00001f, 1.0f};
+
+    float rotateX = 0.0f;
+    float rotateY = 0.0f;
+    float rotateZ = 0.0f;
+    if(targetPos.y != 0.0f)
+    {
+        rotateX = atanf(targetPos.y / targetPos.z);
+    }
+    else{
+        rotateX = atanf(targetPos.y / targetPos.z);
+        //targetPos = rotation(cameraMat, {0.0f, rotateX, 0.0f}) * targetPos;
+        rotateY = -atanf(targetPos.x / targetPos.z);
+    }
+
+    lookAtMat = rotation(lookAtMat, {rotateX, rotateY, rotateZ});
+
+    return lookAtMat;
 }
 
 MMat4 MMat4::operator*(const MMat4 &mat4) const
