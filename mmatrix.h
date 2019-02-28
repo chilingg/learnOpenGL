@@ -5,7 +5,7 @@
 #include "mvec.h"
 #include <iostream>
 
-constexpr float M_PI_F = 3.1415926f;
+constexpr float M_PI_F = 3.14159f;
 
 class MMat4
 {
@@ -34,7 +34,7 @@ MMat4 translate(const MMat4 &mat, const MVec3 &vec3);
 MMat4 rotation(const MMat4 &mat, const MVec3 &vec3);
 MMat4 scale(const MMat4 &mat, const MVec3 &vec3);
 MMat4 camera(const MMat4 &mat, const MVec3 &vec3);
-MMat4 lookAt(const MMat4 &mat, MVec3 targetPos);
+MMat4 lookAt(const MMat4 &mat, const MVec3 &targetPos);
 MMat4 projective(float f);
 
 template <typename T>

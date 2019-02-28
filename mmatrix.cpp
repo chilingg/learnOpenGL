@@ -144,36 +144,36 @@ MMat4 projective(float f)
     return temp;
 }
 
-MMat4 lookAt(const MMat4 &mat, MVec3 target)
+MMat4 lookAt(const MMat4 &mat, const MVec3 &target)
 {
     MMat4 lookAtMat = makeIdentityMatrix();
 
     MVec4 targetPos = {target.x, target.y, target.z, 1.0f};
     targetPos = mat * targetPos;
-    std::cout << '\n' << targetPos.x << targetPos.y << targetPos.z << std::endl;
+
+    //若xy符号相同，需在最后校正
+    bool check = false;
+    check = targetPos.x < 0.0f ? check : !check;
+    check = targetPos.y < 0.0f ? !check : check;
 
     float rotateX = 0.0f;
     float rotateY = 0.0f;
-    if(targetPos.y != 0.0f)
-    {
-        rotateX = radians(90.0f) - atanf(targetPos.z / targetPos.y);
-        std::cout << "rotateX\t" << degrees(rotateX) << std::endl;
-    }
-    targetPos = rotation(lookAtMat, {rotateX, 0.0f, 0.0f}) * targetPos;
-    std::cout << targetPos.x << targetPos.y << targetPos.z << std::endl;
-
     if(targetPos.x != 0.0f)
-    {
         rotateY = radians(90.0f) + atanf(targetPos.z / targetPos.x);
-        std::cout << "rotateY\t" << degrees(rotateY) << std::endl;
-    }
     targetPos = rotation(lookAtMat, {0.0f, rotateY, 0.0f}) * targetPos;
-    std::cout << targetPos.x << targetPos.y << targetPos.z << std::endl;
 
-    lookAtMat = rotation(mat, {rotateX, rotateY, 0.0f});
+    if(targetPos.y != 0.0f)
+        rotateX = radians(90.0f) - atanf(targetPos.z / targetPos.y);
+    targetPos = rotation(lookAtMat, {rotateX, 0.0f, 0.0f}) * targetPos;
+
+    //处在正Z轴则绕Y轴旋转180度
+    lookAtMat = rotation(mat, {0.0f, rotateY, 0.0f});
+    lookAtMat = rotation(lookAtMat, {rotateX, 0.0f, 0.0f});
     if(targetPos.z > 0.0f)
-        lookAtMat = rotation(mat, {0.0f, radians(180.0f), 0.0f});
-    //std::cout << targetPos.x << targetPos.y << targetPos.z << std::endl;
+        lookAtMat = rotation(lookAtMat, {0.0f, radians(180.0f), 0.0f});
+
+    if(check)
+        lookAtMat = rotation(lookAtMat, {0.0f, 0.0f, radians(180.0f)});
 
     return lookAtMat;
 }

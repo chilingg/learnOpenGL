@@ -182,8 +182,10 @@ int main()
                 std::cerr << "No find uniform location" << std::endl;
 
             MMat4 view = makeIdentityMatrix();
-            view = camera(view, {1.5f, 1.5f, 0.0f});
-            view = rotation(view, {radians(90.0f), radians(135.0f), 0.0f});
+            view = camera(view, {static_cast<float>(glfwGetTime()), 0.0f, static_cast<float>(glfwGetTime())});
+            view = lookAt(view, {0.0f, 0.0f, 0.0f});
+            //view = rotation(view, {radians(90.0f), radians(135.0f), 0.0f});
+            //view = rotation(view, {0.0f, radians(180.0f), 0.0f});
             int viewLoc = glGetUniformLocation(myShader.shaderProgramID, "view");
             if(viewLoc != -1)
                 glUniformMatrix4fv(viewLoc, 1, GL_TRUE, view.matrixPtr());
