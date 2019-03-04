@@ -15,6 +15,12 @@
 constexpr unsigned SCR_WIDTH = 800;
 constexpr unsigned SCR_HEIGHT = 600;
 
+static MVec3 cameraMove = { 0.0f, 0.0f, 0.0f };//Z轴平移
+static float cameraSpeed = 0.05f;//移动速度
+static float deltaTime = 0.0f; // 当前帧与上一帧的时间差
+static float lastTime= 0.0f; // 上一帧的时间
+static float currentTime = 0.0f;//当前时间
+
 void framebuffer_size_callback(GLFWwindow *, int width, int height);
 void processInput(GLFWwindow *window);
 
@@ -163,43 +169,38 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);//清屏 清除颜色缓冲和深度缓冲
         //指定该VAO中的解析顶点指针和存在的EBO
         glBindVertexArray(VAO);
-        for(size_t i = 0; i < 1; i++)
+        //修正视图移动速度
+        currentTime = static_cast<float>(glfwGetTime());
+        deltaTime = currentTime - lastTime;
+        lastTime = currentTime;
+        cameraSpeed = 2.5f * deltaTime;
+        //视图矩阵
+        MMat4 view = makeIdentityMatrix();
+        view = camera(view, cameraMove);
+        //view = lookAt(view, {0.0f, 0.0f, 0.0f});
+        int viewLoc = glGetUniformLocation(myShader.shaderProgramID, "view");
+        if(viewLoc != -1)
+            glUniformMatrix4fv(viewLoc, 1, GL_TRUE, view.matrixPtr());
+        else
+            std::cerr << "No find uniform location" << std::endl;
+        //投影矩阵
+        MMat4 projection = projective(1.0f);
+        int proLoc = glGetUniformLocation(myShader.shaderProgramID, "projection");
+        if(proLoc != -1)
+            glUniformMatrix4fv(proLoc, 1, GL_TRUE, projection.matrixPtr());
+        else
+            std::cerr << "No find uniform location" << std::endl;
+        //绘制多个相同物体
+        for(size_t i = 0; i < 10; i++)
         {
             //更新变换矩阵
             MMat4 model = makeIdentityMatrix();
             //model = scale(model, {0.5f, 0.5f, 0.5f});
             //model = rotation(model, {0.0f, i*20.0f, 0.0f});
-            model = translate(model, {0.0f, 0.0f, 0.0f});
             model = translate(model, cubePositions[i]);
-            //glm::mat4 model = glm::scale(glm::mat4(1.0f), {0.5f, 0.5f, 0.5f});
-            //model = glm::rotate(model, glm::radians(static_cast<float>(glfwGetTime() * i)), {0.0f, 1.0f, 0.0f});
-            //model = glm::translate(model, {0.0f, 0.0f, -3.0f});
             int transLoc = glGetUniformLocation(myShader.shaderProgramID, "model");
             if(transLoc != -1)
                 glUniformMatrix4fv(transLoc, 1, GL_TRUE, model.matrixPtr());
-                //glUniformMatrix4fv(transLoc, 1, GL_FALSE, glm::value_ptr(model));
-            else
-                std::cerr << "No find uniform location" << std::endl;
-
-            MMat4 view = makeIdentityMatrix();
-            view = camera(view, {static_cast<float>(glfwGetTime()), 0.0f, static_cast<float>(glfwGetTime())});
-            view = lookAt(view, {0.0f, 0.0f, 0.0f});
-            //view = rotation(view, {radians(90.0f), radians(135.0f), 0.0f});
-            //view = rotation(view, {0.0f, radians(180.0f), 0.0f});
-            int viewLoc = glGetUniformLocation(myShader.shaderProgramID, "view");
-            if(viewLoc != -1)
-                glUniformMatrix4fv(viewLoc, 1, GL_TRUE, view.matrixPtr());
-            else
-                std::cerr << "No find uniform location" << std::endl;
-
-            MMat4 projection = projective(1.0f);
-            /*glm::mat4 projection = glm::perspective(glm::radians(45.0f),
-                                                    static_cast<float>(SCR_WIDTH/SCR_HEIGHT),
-                                                    0.1f, 100.0f);*/
-            int proLoc = glGetUniformLocation(myShader.shaderProgramID, "projection");
-            if(proLoc != -1)
-                glUniformMatrix4fv(proLoc, 1, GL_TRUE, projection.matrixPtr());
-                //glUniformMatrix4fv(proLoc, 1, GL_FALSE, glm::value_ptr(projection));
             else
                 std::cerr << "No find uniform location" << std::endl;
 
@@ -215,6 +216,8 @@ int main()
     }
 
     //正确释放/删除之前分配的所有资源
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
     glfwTerminate();
 
     return 0;
@@ -231,4 +234,14 @@ void processInput(GLFWwindow *window)
     //检查用户是否按下了返回键(Esc)，若是则退出
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+
+    //相机移动
+    if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        cameraMove.z -= cameraSpeed;
+    if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        cameraMove.z += cameraSpeed;
+    if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        cameraMove.x -= cameraSpeed;
+    if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        cameraMove.x += cameraSpeed;
 }
