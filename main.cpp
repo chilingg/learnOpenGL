@@ -21,8 +21,14 @@ static float deltaTime = 0.0f; // 当前帧与上一帧的时间差
 static float lastTime= 0.0f; // 上一帧的时间
 static float currentTime = 0.0f;//当前时间
 
+static MVec3 rotateView = {0.0f, 0.0f, 0.0f};
+static float rotateSpeed = 0.01f;
+static float oldX = SCR_WIDTH / 2;
+static float oldY = SCR_HEIGHT / 2;
+
 void framebuffer_size_callback(GLFWwindow *, int width, int height);
 void processInput(GLFWwindow *window);
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 
 int main()
 {
@@ -44,6 +50,10 @@ int main()
     glfwMakeContextCurrent(window);
     //对窗口注册一个回调函数，它在每次窗口大小被调整的时候被调用
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    //注册一个鼠标移动事件回调函数
+    glfwSetCursorPosCallback(window,mouse_callback);
+    //隐藏并捕捉光标
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     //初始化GLAD，glfwGetProcAddress是GLAD用来加载系统相关的OpenGL函数指针地址的函数
     if(!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)))
@@ -177,6 +187,7 @@ int main()
         //视图矩阵
         MMat4 view = makeIdentityMatrix();
         view = camera(view, cameraMove);
+        view = rotation(view, rotateView);
         //view = lookAt(view, {0.0f, 0.0f, 0.0f});
         int viewLoc = glGetUniformLocation(myShader.shaderProgramID, "view");
         if(viewLoc != -1)
@@ -244,4 +255,13 @@ void processInput(GLFWwindow *window)
         cameraMove.x -= cameraSpeed;
     if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         cameraMove.x += cameraSpeed;
+}
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+    float newX = static_cast<float>(xpos);
+    float newY = static_cast<float>(ypos);
+    rotateView.x = (newX - oldX) * rotateSpeed;
+    rotateView.y = (newY - oldY) * rotateSpeed;
+    std::cout << rotateView.x << ' ' << rotateView.y << std::endl;
 }
