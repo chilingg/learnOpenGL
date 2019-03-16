@@ -22,7 +22,7 @@ static float lastTime= 0.0f; // 上一帧的时间
 static float currentTime = 0.0f;//当前时间
 
 static MVec3 rotateView = {0.0f, 0.0f, 0.0f};
-static float rotateSpeed = 0.01f;
+static float sensitivity = 0.001f;
 static float oldX = SCR_WIDTH / 2;
 static float oldY = SCR_HEIGHT / 2;
 
@@ -187,7 +187,8 @@ int main()
         //视图矩阵
         MMat4 view = makeIdentityMatrix();
         view = camera(view, cameraMove);
-        view = rotation(view, rotateView);
+        view = rotation(view, {0.0f, rotateView.y, 0.0f});
+        view = rotation(view, {rotateView.x, 0.0f, 0.0f});
         //view = lookAt(view, {0.0f, 0.0f, 0.0f});
         int viewLoc = glGetUniformLocation(myShader.shaderProgramID, "view");
         if(viewLoc != -1)
@@ -248,20 +249,38 @@ void processInput(GLFWwindow *window)
 
     //相机移动
     if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        cameraMove.z -= cameraSpeed;
+    {
+        cameraMove.z -= cosf(rotateView.y) * cameraSpeed;
+        cameraMove.x += sinf(rotateView.y) * cameraSpeed;
+    }
     if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        cameraMove.z += cameraSpeed;
+    {
+        cameraMove.z += cosf(rotateView.y) * cameraSpeed;
+        cameraMove.x -= sinf(rotateView.y) * cameraSpeed;
+    }
     if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        cameraMove.x -= cameraSpeed;
+    {
+        cameraMove.z -= sinf(rotateView.y) * cameraSpeed;
+        cameraMove.x -= cosf(rotateView.y) * cameraSpeed;
+    }
     if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        cameraMove.x += cameraSpeed;
+    {
+        cameraMove.z += sinf(rotateView.y) * cameraSpeed;
+        cameraMove.x += cosf(rotateView.y) * cameraSpeed;
+    }
 }
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+void mouse_callback(GLFWwindow*, double xpos, double ypos)
 {
     float newX = static_cast<float>(xpos);
     float newY = static_cast<float>(ypos);
-    rotateView.x = (newX - oldX) * rotateSpeed;
-    rotateView.y = (newY - oldY) * rotateSpeed;
-    std::cout << rotateView.x << ' ' << rotateView.y << std::endl;
+    rotateView.y += (newX - oldX) * sensitivity;
+    rotateView.x += (newY - oldY) * sensitivity;
+    if(rotateView.x > 1.0f)
+        rotateView.x = 1.0f;
+    if(rotateView.x < -1.0f)
+        rotateView.x = -1.0f;
+    oldX = newX;
+    oldY = newY;
+    std::cout << newX << ' ' << newY << std::endl;
 }
