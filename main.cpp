@@ -26,6 +26,8 @@ static float sensitivity = 0.001f;
 static float oldX = SCR_WIDTH / 2;
 static float oldY = SCR_HEIGHT / 2;
 
+static bool firstMouse = true;
+
 void framebuffer_size_callback(GLFWwindow *, int width, int height);
 void processInput(GLFWwindow *window);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -274,13 +276,30 @@ void mouse_callback(GLFWwindow*, double xpos, double ypos)
 {
     float newX = static_cast<float>(xpos);
     float newY = static_cast<float>(ypos);
+
+    //校正第一次鼠标位置
+    if(firstMouse)
+    {
+        oldX = newX;
+        oldY = newY;
+        firstMouse = false;
+    }
+
     rotateView.y += (newX - oldX) * sensitivity;
     rotateView.x += (newY - oldY) * sensitivity;
+
+    //仰角限制
     if(rotateView.x > 1.0f)
         rotateView.x = 1.0f;
     if(rotateView.x < -1.0f)
         rotateView.x = -1.0f;
+
     oldX = newX;
     oldY = newY;
-    std::cout << newX << ' ' << newY << std::endl;
+
+}
+
+void whell_callback()
+{
+
 }
