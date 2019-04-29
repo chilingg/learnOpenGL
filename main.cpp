@@ -7,9 +7,6 @@
 #include "mshader.h"
 #include "stb_image_implementation.h"
 #include "mmatrix.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 //Window size
 constexpr unsigned SCR_WIDTH = 800;
@@ -117,7 +114,7 @@ int main()
         .5f, -.5f, .5f, 1.0f, .0f,//r-b-n
 
         -.5f, .5f, -.5f, 1.0f, 1.0f,//l-t-f
-        .5f, .5f, -.5f, .0f, 1.0f,//r-t-f
+        .5f, .7f, -.5f, .0f, 1.0f,//r-t-f
         -.5f, -.5f, -.5f, 1.0f, .0f,//l-b-f
         .5f, -.5f, -.5f, .0f, .0f,//r-b-f
     };
@@ -199,6 +196,10 @@ int main()
             std::cerr << "No find uniform location" << std::endl;
         //投影矩阵
         MMat4 projection = projective(1.0f);
+        projection.identityMatrix();
+        /*MVec4 tt = {0.5f, 0.5f, -0.5f, 1.0f};
+        tt = projection * tt;
+        std::cout << tt.x/tt.w << ' ' << tt.y/tt.w << ' ' << tt.z/tt.w << ' ' << tt.w/tt.w << std::endl;*/
         int proLoc = glGetUniformLocation(myShader.shaderProgramID, "projection");
         if(proLoc != -1)
             glUniformMatrix4fv(proLoc, 1, GL_TRUE, projection.matrixPtr());
@@ -232,6 +233,7 @@ int main()
     //正确释放/删除之前分配的所有资源
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
     glfwTerminate();
 
     return 0;

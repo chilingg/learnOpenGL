@@ -11,10 +11,10 @@ SOURCES += \
     mmatrix.cpp
 
 win32{
-LIBS += -L$$PWD/../../bin/libs/ -lglfw3dll
+LIBS += -L$$PWD/../bin/libs/ -lglfw3
 
-INCLUDEPATH += $$PWD/../../bin/include
-DEPENDPATH += $$PWD/../../bin/include
+INCLUDEPATH += $$PWD/../bin/include
+DEPENDPATH += $$PWD/../bin/include
 }
 
 unix{
