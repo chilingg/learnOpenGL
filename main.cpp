@@ -195,8 +195,7 @@ int main()
         else
             std::cerr << "No find uniform location" << std::endl;
         //投影矩阵
-        MMat4 projection = projective(1.0f);
-        projection.identityMatrix();
+        MMat4 projection = projective(1.5f);
         /*MVec4 tt = {0.5f, 0.5f, -0.5f, 1.0f};
         tt = projection * tt;
         std::cout << tt.x/tt.w << ' ' << tt.y/tt.w << ' ' << tt.z/tt.w << ' ' << tt.w/tt.w << std::endl;*/
