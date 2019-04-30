@@ -6,19 +6,22 @@
 #include <fstream>
 #include "mshader.h"
 #include "stb_image_implementation.h"
-#include "mmatrix.h"
+//#include "mmatrix.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 //Window size
-constexpr unsigned SCR_WIDTH = 800;
-constexpr unsigned SCR_HEIGHT = 600;
+constexpr float SCR_WIDTH = 800;
+constexpr float SCR_HEIGHT = 600;
 
-static MVec3 cameraMove = { 0.0f, 0.0f, 0.0f };//Z轴平移
+static glm::vec3 cameraMove = { 0.0f, 0.0f, 0.0f };//Z轴平移
 static float cameraSpeed = 0.05f;//移动速度
 static float deltaTime = 0.0f; // 当前帧与上一帧的时间差
 static float lastTime= 0.0f; // 上一帧的时间
 static float currentTime = 0.0f;//当前时间
 
-static MVec3 rotateView = {0.0f, 0.0f, 0.0f};
+static glm::vec3 rotateView = {0.0f, 0.0f, 0.0f};
 static float sensitivity = 0.001f;
 static float oldX = SCR_WIDTH / 2;
 static float oldY = SCR_HEIGHT / 2;
@@ -154,19 +157,6 @@ int main()
     //显式解绑VAO
     glBindVertexArray(0);
 
-    MVec3 cubePositions[] = {
-        MVec3{ 0.0f,  0.0f,  0.0f},
-        MVec3{ 2.0f,  5.0f, -15.0f},
-        MVec3{-1.5f, -2.2f, -2.5f},
-        MVec3{-3.8f, -2.0f, -12.3f},
-        MVec3{ 2.4f, -0.4f, -3.5f},
-        MVec3{-1.7f,  3.0f, -7.5f},
-        MVec3{ 1.3f, -2.0f, -2.5f},
-        MVec3{ 1.5f,  2.0f, -2.5f},
-        MVec3{ 1.5f,  0.2f, -1.5f},
-        MVec3{-1.3f,  1.0f, -1.5f}
-      };
-
     //渲染循环
     while(!glfwWindowShouldClose(window))
     {
@@ -184,42 +174,32 @@ int main()
         lastTime = currentTime;
         cameraSpeed = 2.5f * deltaTime;
         //视图矩阵
-        MMat4 view = makeIdentityMatrix();
-        view = camera(view, cameraMove);
-        view = rotation(view, {0.0f, rotateView.y, 0.0f});
-        view = rotation(view, {rotateView.x, 0.0f, 0.0f});
-        //view = lookAt(view, {0.0f, 0.0f, 0.0f});
+        glm::mat4 view(1.0f);
+        view = glm::translate(view, {-cameraMove.x, -cameraMove.y, -cameraMove.z});
+        view = glm::rotate(view, rotateView.y, {0.0f, 1.0f, 0.0f});
+        view = glm::rotate(view, rotateView.x, {1.0f, 0.0f, 0.0f});
         int viewLoc = glGetUniformLocation(myShader.shaderProgramID, "view");
         if(viewLoc != -1)
-            glUniformMatrix4fv(viewLoc, 1, GL_TRUE, view.matrixPtr());
+            glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
         else
             std::cerr << "No find uniform location" << std::endl;
         //投影矩阵
-        MMat4 projection = projective(1.5f);
-        /*MVec4 tt = {0.5f, 0.5f, -0.5f, 1.0f};
-        tt = projection * tt;
-        std::cout << tt.x/tt.w << ' ' << tt.y/tt.w << ' ' << tt.z/tt.w << ' ' << tt.w/tt.w << std::endl;*/
+        glm::mat4 projection(1.0f);
+        projection = glm::perspective(glm::radians(45.0f), SCR_WIDTH/SCR_HEIGHT, 0.1f, 100.f);
         int proLoc = glGetUniformLocation(myShader.shaderProgramID, "projection");
         if(proLoc != -1)
-            glUniformMatrix4fv(proLoc, 1, GL_TRUE, projection.matrixPtr());
+            glUniformMatrix4fv(proLoc, 1, GL_FALSE, glm::value_ptr(projection));
         else
             std::cerr << "No find uniform location" << std::endl;
-        //绘制多个相同物体
-        for(size_t i = 0; i < 10; i++)
-        {
-            //更新变换矩阵
-            MMat4 model = makeIdentityMatrix();
-            //model = scale(model, {0.5f, 0.5f, 0.5f});
-            //model = rotation(model, {0.0f, i*20.0f, 0.0f});
-            model = translate(model, cubePositions[i]);
-            int transLoc = glGetUniformLocation(myShader.shaderProgramID, "model");
-            if(transLoc != -1)
-                glUniformMatrix4fv(transLoc, 1, GL_TRUE, model.matrixPtr());
-            else
-                std::cerr << "No find uniform location" << std::endl;
+        //更新变换矩阵
+        glm::mat4 model(1.0f);
+        int transLoc = glGetUniformLocation(myShader.shaderProgramID, "model");
+        if(transLoc != -1)
+            glUniformMatrix4fv(transLoc, 1, GL_FALSE, glm::value_ptr(model));
+        else
+            std::cerr << "No find uniform location" << std::endl;
 
-            glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(unsigned), GL_UNSIGNED_INT, nullptr);//以EBO存储的索引顺序绘制三角形
-        }
+        glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(unsigned), GL_UNSIGNED_INT, nullptr);//以EBO存储的索引顺序绘制三角形
         //glDrawArrays(GL_TRIANGLES, 0, 6);//VBO内存储顶点顺序绘制
 
         //检查并调用事件，交换缓冲----
