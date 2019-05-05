@@ -1,11 +1,12 @@
 #version 330 core
+out vec4 FragColor;
+in float R;
 
-in vec2 TexCoord;
-//out vec4 fragColor;
-uniform sampler2D ourTexture1;//内建采样器类型
-uniform sampler2D ourTexture2;
+uniform vec3 objectColor;
+uniform vec3 lightColor;
 
 void main(void)
 {
-    gl_FragColor = mix(texture2D(ourTexture1, TexCoord), texture2D(ourTexture2, vec2(TexCoord.x, TexCoord.y)), 0.2f);
+    vec3 ambient = lightColor * 0.1;
+    FragColor = vec4(objectColor * ambient, 1.0);
 }

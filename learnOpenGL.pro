@@ -24,7 +24,8 @@ unix:!macx: LIBS += -lglfw \
 
 DISTFILES += \
     shader/vertex.vert \
-    shader/fragment.frag
+    shader/fragment.frag \
+    shader/lamp.frag
 
 HEADERS += \
     mshader.h \
