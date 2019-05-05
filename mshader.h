@@ -2,6 +2,7 @@
 #define MSHADER_H
 
 #include <glad/glad.h>
+#include <glm/glm.hpp>
 #include <string>
 #include <fstream>
 #include <sstream>
@@ -19,6 +20,7 @@ public:
     void setUniform1F(const string &name, float value) const;
     void setUniform1I(const string &name, int value) const;
     void setUniform3F(const string &name, float value1, float value2, float value3) const;
+    void setUniform3F(const string &name, glm::vec3 vec) const;
     void setUniforMatrix4fv(float *ptr, const char *name);
 
     unsigned int shaderProgramID;
@@ -54,6 +56,11 @@ inline void MShader::setUniform3F(const std::string &name, float value1, float v
         glUniform3f(loc, value1, value2, value3);
     else
         std::cerr << "No find uniform location of the " << name.c_str() << std::endl;
+}
+
+inline void MShader::setUniform3F(const std::string &name, glm::vec3 vec) const
+{
+    setUniform3F(name, vec.x, vec.y, vec.z);
 }
 
 inline void MShader::setUniforMatrix4fv(float *ptr, const char *name)

@@ -73,48 +73,47 @@ int main()
 
     //以标准化设备坐标指定多个顶点
     float vertices[] = {
-        //near
-        .5f, .5f, .5f,
-        -.5f, .5f, .5f,
-        .5f, -.5f, .5f,
-        -.5f, -.5f, .5f,
-        -.5f, .5f, .5f,
-        .5f, -.5f, .5f,
-        //far
-        .5f, .5f, -.5f,
-        -.5f, .5f, -.5f,
-        .5f, -.5f, -.5f,
-        -.5f, -.5f, -.5f,
-        -.5f, .5f, -.5f,
-        .5f, -.5f, -.5f,
-        //right
-        .5f, .5f, .5f,
-        .5f, -.5f, .5f,
-        .5f, .5f, -.5f,
-        .5f, -.5f, .5f,
-        .5f, .5f, -.5f,
-        .5f, -.5f, -.5f,
-        //left
-        -.5f, .5f, .5f,
-        -.5f, -.5f, .5f,
-        -.5f, .5f, -.5f,
-        -.5f, -.5f, .5f,
-        -.5f, .5f, -.5f,
-        -.5f, -.5f, -.5f,
-        //top
-        .5f, .5f, .5f,
-        -.5f, .5f, .5f,
-        -.5f, .5f, -.5f,
-        -.5f, .5f, -.5f,
-        .5f, .5f, .5f,
-        .5f, .5f, -.5f,
-        //bottom
-        .5f, -.5f, .5f,
-        -.5f, -.5f, .5f,
-        -.5f, -.5f, -.5f,
-        -.5f, -.5f, -.5f,
-        .5f, -.5f, .5f,
-        .5f, -.5f, -.5f,
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+
+         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
     };
     //一个以缓冲ID生成一个VBO和VAO对象，第一个参数为第二参数指向多少个连续对象
     unsigned int VAO, VBO;
@@ -138,19 +137,21 @@ int main()
     //使用相同的顶点缓冲对象
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     //设置灯的顶点属性
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof (float), nullptr);//位置属性
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof (float), nullptr);//位置属性
     glEnableVertexAttribArray(0);
     //显式解绑VAO
     glBindVertexArray(0);
 
+    //光源坐标
+    glm::vec3 lightPos(1.2f, 1.0f, -4.0f);
+
     MShader myShader("../learnOpenGL/shader/vertex.vert",
                      "../learnOpenGL/shader/fragment.frag");
     //glUniform3f(glGetUniformLocation(myShader.shaderProgramID, "objectColor"), 1.0f, 0.5f, 0.31f); // 手动设置
+    myShader.setUniform3F("lightPos", lightPos);
 
     MShader lightShader("../learnOpenGL/shader/vertex.vert",
                      "../learnOpenGL/shader/lamp.frag");
-    //光源坐标
-    glm::vec3 lightPos(1.2f, 1.0f, -4.0f);
 
     //视图矩阵
     glm::mat4 view(1.0f);
