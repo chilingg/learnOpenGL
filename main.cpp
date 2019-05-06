@@ -125,8 +125,10 @@ int main()
     //顶点数据复制到缓冲的内存中
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
     //告诉OpenGL该如何解析顶点数据（应用到逐个顶点属性上）
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof (float), nullptr);//位置属性
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof (float), nullptr);//位置属性
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6*sizeof (float), reinterpret_cast<void*>(3*sizeof(float)));//位置属性
+    glEnableVertexAttribArray(1);
     //显式解绑VAO
     glBindVertexArray(0);
 
@@ -144,11 +146,9 @@ int main()
 
     //光源坐标
     glm::vec3 lightPos(1.2f, 1.0f, -4.0f);
-
     MShader myShader("../learnOpenGL/shader/vertex.vert",
                      "../learnOpenGL/shader/fragment.frag");
     //glUniform3f(glGetUniformLocation(myShader.shaderProgramID, "objectColor"), 1.0f, 0.5f, 0.31f); // 手动设置
-    myShader.setUniform3F("lightPos", lightPos);
 
     MShader lightShader("../learnOpenGL/shader/vertex.vert",
                      "../learnOpenGL/shader/lamp.frag");
@@ -159,6 +159,8 @@ int main()
     glm::mat4 projection(1.0f);
     //变换矩阵
     glm::mat4 model(1.0f);
+    //法线矩阵
+    glm::mat3 normalMat(1.0f);
 
     //渲染循环
     while(!glfwWindowShouldClose(window))
@@ -178,6 +180,7 @@ int main()
 
         //指定着色器程序对象
         myShader.use();
+        myShader.setUniform3F("lightPos", lightPos);
         myShader.setUniform3F("lightColor", 1.0f, 1.0f, 1.0f);
 
         projection = glm::mat4(1.0);
@@ -191,14 +194,17 @@ int main()
         myShader.setUniforMatrix4fv(glm::value_ptr(view), "view");
 
         model = glm::mat4(1.0);
-        model = glm::translate(model, {0.0f, 0.0f, -4.0f});
+        model = glm::translate(model, {0.0f, -1.0f, -4.0f});
         myShader.setUniforMatrix4fv(glm::value_ptr(model), "model");
+
+        normalMat = glm::mat3(model);
+        myShader.setUniforMatrix3fv(glm::value_ptr(normalMat), "normalMat");
 
         //指定该VAO中的解析顶点指针和存在的EBO
         glBindVertexArray(VAO);
         //glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(unsigned), GL_UNSIGNED_INT, nullptr);//以EBO存储的索引顺序绘制三角形
         myShader.setUniform3F("objectColor", 1.0f, 0.5f, 0.3f);
-        glDrawArrays(GL_TRIANGLES, 0, sizeof(vertices)/sizeof(float));//VBO内存储顶点顺序绘制
+        glDrawArrays(GL_TRIANGLES, 0, sizeof(vertices)/sizeof(float)/2);//VBO内存储顶点顺序绘制
 
         //绘制灯
         lightShader.use();
@@ -221,6 +227,7 @@ int main()
     //正确释放/删除之前分配的所有资源
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &lightVAO);
     glfwTerminate();
 
     return 0;
