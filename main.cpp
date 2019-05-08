@@ -163,12 +163,12 @@ int main()
     glm::mat3 normalMat(1.0f);
 
     glm::vec3 lightPos(1.2f, 0.0f, -4.0f);//光源坐标
-    glm::vec3 ambientStrength(0.5f);//环境光量
     glm::vec3 specularStrength(1.0f);//高光（光源）量
+    glm::vec3 ambientStrength = specularStrength * 0.5f;//环境光量
     glm::vec3 diffuse = specularStrength - ambientStrength;//漫反射量（保持本身颜色）
     myShader.use();
-    myShader.setUniform3F("light.ambient", ambientStrength);
     myShader.setUniform3F("light.specular", specularStrength);
+    myShader.setUniform3F("light.ambient", ambientStrength);
     myShader.setUniform3F("light.diffuse",  diffuse);
 
     //渲染循环
