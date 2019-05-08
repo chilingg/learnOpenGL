@@ -37,30 +37,6 @@ MMat4 camera(const MMat4 &mat, const MVec3 &vec3);
 MMat4 lookAt(const MMat4 &mat, const MVec3 &targetPos);
 MMat4 projective(float f);
 
-template <typename T>
-void printMat(const T& mat, bool trans = false)
-{
-    if(trans)
-    {
-        for(size_t i = 0; i < 4; ++i)
-        {
-            std::cout << mat[0][i] << ','
-                    << mat[1][i] << ','
-                    << mat[2][i] << ','
-                    << mat[3][i] << std::endl;
-        }
-    } else
-    {
-        for(size_t i = 0; i < 4; ++i)
-        {
-            std::cout << mat[i][0] << ','
-                    << mat[i][1] << ','
-                    << mat[i][2] << ','
-                    << mat[i][3] << std::endl;
-        }
-    }
-}
-
 inline auto MMat4::operator[](const size_t &t) const -> const float(&) [4]
 {
     return this->matrix[t];

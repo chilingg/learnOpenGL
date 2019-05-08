@@ -22,7 +22,7 @@ public:
     void setUniform3F(const string &name, float value1, float value2, float value3) const;
     void setUniform3F(const string &name, glm::vec3 vec) const;
     void setUniforMatrix4fv(float *ptr, const char *name);
-    void setUniforMatrix3fv(float *ptr, const char *name);
+    void setUniformMatrix3fv(float *ptr, const char *name, bool transpose = false);
 
     unsigned int shaderProgramID;
 };
@@ -73,11 +73,16 @@ inline void MShader::setUniforMatrix4fv(float *ptr, const char *name)
         std::cerr << "No find uniform location " << name << std::endl;
 }
 
-inline void MShader::setUniforMatrix3fv(float *ptr, const char *name)
+inline void MShader::setUniformMatrix3fv(float *ptr, const char *name, bool transpose)
 {
     int loc = glGetUniformLocation(shaderProgramID, name);
     if(loc != -1)
-        glUniformMatrix3fv(loc, 1, GL_FALSE, ptr);
+    {
+        if(transpose)
+            glUniformMatrix3fv(loc, 1, GL_TRUE, ptr);
+        else
+            glUniformMatrix3fv(loc, 1, GL_FALSE, ptr);
+    }
     else
         std::cerr << "No find uniform location " << name << std::endl;
 }

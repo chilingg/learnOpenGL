@@ -15,7 +15,7 @@
 constexpr float SCR_WIDTH = 800;
 constexpr float SCR_HEIGHT = 600;
 
-static glm::vec3 cameraMove = { 0.0f, 0.0f, 0.0f };//摄像机平移
+static glm::vec3 cameraPos = { 0.0f, 0.0f, 0.0f };//摄像机平移
 static float cameraSpeed = 0.05f;//移动速度
 static float deltaTime = 0.0f; // 当前帧与上一帧的时间差
 static float lastTime= 0.0f; // 上一帧的时间
@@ -31,6 +31,8 @@ static bool firstMouse = true;//定位第一次移动时的光标位置
 void framebuffer_size_callback(GLFWwindow *, int width, int height);
 void processInput(GLFWwindow *window);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+
+void printMat(const float *mat, unsigned column, unsigned row);
 
 int main()
 {
@@ -144,8 +146,6 @@ int main()
     //显式解绑VAO
     glBindVertexArray(0);
 
-    //光源坐标
-    glm::vec3 lightPos(1.2f, 1.0f, -4.0f);
     MShader myShader("../learnOpenGL/shader/vertex.vert",
                      "../learnOpenGL/shader/fragment.frag");
     //glUniform3f(glGetUniformLocation(myShader.shaderProgramID, "objectColor"), 1.0f, 0.5f, 0.31f); // 手动设置
@@ -161,6 +161,15 @@ int main()
     glm::mat4 model(1.0f);
     //法线矩阵
     glm::mat3 normalMat(1.0f);
+
+    glm::vec3 lightPos(1.2f, 0.0f, -4.0f);//光源坐标
+    glm::vec3 ambientStrength(0.5f);//环境光量
+    glm::vec3 specularStrength(1.0f);//高光（光源）量
+    glm::vec3 diffuse = specularStrength - ambientStrength;//漫反射量（保持本身颜色）
+    myShader.use();
+    myShader.setUniform3F("light.ambient", ambientStrength);
+    myShader.setUniform3F("light.specular", specularStrength);
+    myShader.setUniform3F("light.diffuse",  diffuse);
 
     //渲染循环
     while(!glfwWindowShouldClose(window))
@@ -178,10 +187,12 @@ int main()
         lastTime = currentTime;
         cameraSpeed = 2.5f * deltaTime;
 
+        lightPos.z = -4.0f + static_cast<float>(sin(glfwGetTime()));
+
         //指定着色器程序对象
         myShader.use();
         myShader.setUniform3F("lightPos", lightPos);
-        myShader.setUniform3F("lightColor", 1.0f, 1.0f, 1.0f);
+        myShader.setUniform3F("cameraPos", cameraPos);
 
         projection = glm::mat4(1.0);
         projection = glm::perspective(glm::radians(45.0f), SCR_WIDTH/SCR_HEIGHT, 0.1f, 100.f);
@@ -190,20 +201,25 @@ int main()
         view = glm::mat4(1.0);
         view = glm::rotate(view, rotateView.x, {1.0f, 0.0f, 0.0f});
         view = glm::rotate(view, rotateView.y, {0.0f, 1.0f, 0.0f});
-        view = glm::translate(view, cameraMove);
+        view = glm::translate(view, -cameraPos);
         myShader.setUniforMatrix4fv(glm::value_ptr(view), "view");
 
         model = glm::mat4(1.0);
-        model = glm::translate(model, {0.0f, -1.0f, -4.0f});
+        model = glm::translate(model, {0.0f, 0.0f, -4.0f});
+        model = glm::rotate(model, glm::radians(5.0f), {0.0f, 1.0f, 0.0f});
         myShader.setUniforMatrix4fv(glm::value_ptr(model), "model");
 
-        normalMat = glm::mat3(model);
-        myShader.setUniforMatrix3fv(glm::value_ptr(normalMat), "normalMat");
+        //法线矩阵为模型矩阵的左上3*3部分矩阵的逆矩阵的转置矩阵，去除W分量部分避免位移造成影响，用以适应非均匀拉伸时的法线方向
+        normalMat = glm::mat3(model);//取左上3*3部分矩阵
+        normalMat = glm::inverse(normalMat);//逆矩阵
+        myShader.setUniformMatrix3fv(glm::value_ptr(normalMat), "normalMat", true);//转置矩阵
 
         //指定该VAO中的解析顶点指针和存在的EBO
         glBindVertexArray(VAO);
         //glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(unsigned), GL_UNSIGNED_INT, nullptr);//以EBO存储的索引顺序绘制三角形
-        myShader.setUniform3F("objectColor", 1.0f, 0.5f, 0.3f);
+        myShader.setUniform3F("material.objectColor", 1.0f, 0.5f, 0.3f);
+        myShader.setUniform3F("material.specular", 0.1f, 0.1f, 0.1f);
+        myShader.setUniform1F("material.shininess", 32.0f);
         glDrawArrays(GL_TRIANGLES, 0, sizeof(vertices)/sizeof(float)/2);//VBO内存储顶点顺序绘制
 
         //绘制灯
@@ -247,23 +263,23 @@ void processInput(GLFWwindow *window)
 
     if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
-        cameraMove.z += cosf(rotateView.y) * cameraSpeed;
-        cameraMove.x -= sinf(rotateView.y) * cameraSpeed;
+        cameraPos.z -= cosf(rotateView.y) * cameraSpeed;
+        cameraPos.x += sinf(rotateView.y) * cameraSpeed;
     }
     if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
-        cameraMove.z -= cosf(rotateView.y) * cameraSpeed;
-        cameraMove.x += sinf(rotateView.y) * cameraSpeed;
+        cameraPos.z += cosf(rotateView.y) * cameraSpeed;
+        cameraPos.x -= sinf(rotateView.y) * cameraSpeed;
     }
     if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
     {
-        cameraMove.z += sinf(rotateView.y) * cameraSpeed;
-        cameraMove.x += cosf(rotateView.y) * cameraSpeed;
+        cameraPos.z -= sinf(rotateView.y) * cameraSpeed;
+        cameraPos.x -= cosf(rotateView.y) * cameraSpeed;
     }
     if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
-        cameraMove.z -= sinf(rotateView.y) * cameraSpeed;
-        cameraMove.x -= cosf(rotateView.y) * cameraSpeed;
+        cameraPos.z += sinf(rotateView.y) * cameraSpeed;
+        cameraPos.x += cosf(rotateView.y) * cameraSpeed;
     }
 }
 
@@ -291,4 +307,17 @@ void mouse_callback(GLFWwindow*, double xpos, double ypos)
 
     oldX = newX;
     oldY = newY;
+}
+
+void printMat(const float *mat, unsigned column, unsigned row)
+{
+    for(unsigned i = 0; i < row; ++i)
+    {
+        for(unsigned j = 0; j < column; ++j)
+        {
+            std::cout << *(mat+((i*column)+j)) << ',';
+        }
+        std::cout << '\n';
+    }
+    std::cout << std::endl;
 }
