@@ -75,48 +75,63 @@ int main()
 
     //以标准化设备坐标指定多个顶点
     float vertices[] = {
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+        // positions          // normals           // texture coords
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
 
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
 
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
 
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
 
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
 
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
     };
+
+    glm::vec3 cubePositions[] = {
+        glm::vec3( 0.0f,  0.0f,  0.0f),
+        glm::vec3( 2.0f,  5.0f, -15.0f),
+        glm::vec3(-1.5f, -2.2f, -2.5f),
+        glm::vec3(-3.8f, -2.0f, -12.3f),
+        glm::vec3( 2.4f, -0.4f, -3.5f),
+        glm::vec3(-1.7f,  3.0f, -7.5f),
+        glm::vec3( 1.3f, -2.0f, -2.5f),
+        glm::vec3( 1.5f,  2.0f, -2.5f),
+        glm::vec3( 1.5f,  0.2f, -1.5f),
+        glm::vec3(-1.3f,  1.0f, -1.5f)
+    };
+
     //一个以缓冲ID生成一个VBO和VAO对象，第一个参数为第二参数指向多少个连续对象
     unsigned int VAO, VBO;
     glGenVertexArrays(1, &VAO);
@@ -127,10 +142,12 @@ int main()
     //顶点数据复制到缓冲的内存中
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
     //告诉OpenGL该如何解析顶点数据（应用到逐个顶点属性上）
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof (float), nullptr);//位置属性
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), nullptr);//位置属性
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6*sizeof (float), reinterpret_cast<void*>(3*sizeof(float)));//位置属性
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), reinterpret_cast<void*>(3*sizeof(float)));//位置属性
     glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8*sizeof(float), reinterpret_cast<void*>(6*sizeof(float)));//位置属性
+    glEnableVertexAttribArray(2);
     //显式解绑VAO
     glBindVertexArray(0);
 
@@ -141,10 +158,40 @@ int main()
     //使用相同的顶点缓冲对象
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     //设置灯的顶点属性
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof (float), nullptr);//位置属性
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), nullptr);//位置属性
     glEnableVertexAttribArray(0);
     //显式解绑VAO
     glBindVertexArray(0);
+
+    //生成纹理ID并绑定到2D纹理
+    unsigned int texture[2];
+    glGenTextures(2, texture);
+    const char *file[2] = {"../learnOpenGL/texture/container2.jpg",
+                           "../learnOpenGL/texture/container2_specular.jpg"};
+    stbi_set_flip_vertically_on_load(true);//翻转图像
+    for(unsigned i = 0; i < 2; ++i)
+    {
+        glActiveTexture(GL_TEXTURE0 + i);
+        glBindTexture(GL_TEXTURE_2D, texture[i]);
+        //为当前绑定纹理对象设置环绕、过滤方式
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        //使用stb_image加载图片
+        int width, height, nrChannels;//宽、高、颜色通道
+        unsigned char *data = stbi_load(file[i], &width, &height, &nrChannels, 0);
+        if(data)
+        {
+            //依据图片生成纹理，其参数为（纹理目标，指定多级渐远纹理级别，纹理存储模式，图宽，高，0，图片模式，图数据类型，图数据）
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+            glGenerateMipmap(GL_TEXTURE_2D);//自动生成所以需要的多级渐远纹理
+        }
+        else{
+            std::cerr << "Failed to load texture" << std::endl;
+        }
+        stbi_image_free(data);//释放图像内存
+    }
 
     MShader myShader("../learnOpenGL/shader/vertex.vert",
                      "../learnOpenGL/shader/fragment.frag");
@@ -162,14 +209,25 @@ int main()
     //法线矩阵
     glm::mat3 normalMat(1.0f);
 
-    glm::vec3 lightPos(1.2f, 0.0f, -4.0f);//光源坐标
-    glm::vec3 specularStrength(1.0f);//高光（光源）量
-    glm::vec3 ambientStrength = specularStrength * 0.5f;//环境光量
-    glm::vec3 diffuse = specularStrength - ambientStrength;//漫反射量（保持本身颜色）
+    glm::vec3 lightPos(0.0f, 0.0f, -2.0f);//光源坐标
+    //光量
+    glm::vec3 lightStrength(1.0f, 1.0f, 1.0f);//高光（光源）量
+    glm::vec3 ambientStrength = lightStrength * 0.1f;//环境光量
+    glm::vec3 diffuse = lightStrength - ambientStrength;//漫反射量（保持本身颜色）
+    glm::vec3 parallelDir(-0.2f, -1.0f, -0.3f);//平行光源方向
+    glm::vec3 parallel = diffuse * 0.2f;//平行光源量
     myShader.use();
-    myShader.setUniform3F("light.specular", specularStrength);
+    myShader.setUniform3F("light.parallelDir", parallelDir);
+    myShader.setUniform3F("light.parallel", parallel);
+    myShader.setUniform3F("light.illuminant", lightStrength);
     myShader.setUniform3F("light.ambient", ambientStrength);
     myShader.setUniform3F("light.diffuse",  diffuse);
+    myShader.setUniform1F("light.constant", 1.0f);
+    myShader.setUniform1F("light.linear", 0.09f);
+    myShader.setUniform1F("light.quadratic", 0.032f);
+    myShader.setUniform3F("light.direction", 0.0f, 0.0f, -1.0f);
+    myShader.setUniform1F("light.cutoff", glm::cos(glm::radians(16.0f)));//使用余弦是为了与点乘结果比较
+    myShader.setUniform1F("light.outCutoff", glm::cos(glm::radians(20.0f)));
 
     //渲染循环
     while(!glfwWindowShouldClose(window))
@@ -187,11 +245,11 @@ int main()
         lastTime = currentTime;
         cameraSpeed = 2.5f * deltaTime;
 
-        lightPos.z = -4.0f + static_cast<float>(sin(glfwGetTime()));
+        lightPos.x = static_cast<float>(sin(glfwGetTime()));
 
         //指定着色器程序对象
         myShader.use();
-        myShader.setUniform3F("lightPos", lightPos);
+        myShader.setUniform3F("light.lightPos", lightPos);
         myShader.setUniform3F("cameraPos", cameraPos);
 
         projection = glm::mat4(1.0);
@@ -204,26 +262,35 @@ int main()
         view = glm::translate(view, -cameraPos);
         myShader.setUniforMatrix4fv(glm::value_ptr(view), "view");
 
-        model = glm::mat4(1.0);
-        model = glm::translate(model, {0.0f, 0.0f, -4.0f});
-        model = glm::rotate(model, glm::radians(5.0f), {0.0f, 1.0f, 0.0f});
-        myShader.setUniforMatrix4fv(glm::value_ptr(model), "model");
+        //创建多个箱子
+        for(unsigned i = 0; i < sizeof(cubePositions)/sizeof(glm::vec3); ++i)
+        {
+            model = glm::mat4(1.0);
+            model = glm::translate(model, {0.0f, 0.0f, -4.0f});
+            model = glm::translate(model, cubePositions[i]);
+            //model = glm::rotate(model, glm::radians(5.0f), {0.0f, 1.0f, 0.0f});
+            model = glm::rotate(model, glm::radians(20.0f * i), glm::vec3(1.0f, 0.3f, 0.5f));
+            myShader.setUniforMatrix4fv(glm::value_ptr(model), "model");
 
-        //法线矩阵为模型矩阵的左上3*3部分矩阵的逆矩阵的转置矩阵，去除W分量部分避免位移造成影响，用以适应非均匀拉伸时的法线方向
-        normalMat = glm::mat3(model);//取左上3*3部分矩阵
-        normalMat = glm::inverse(normalMat);//逆矩阵
-        myShader.setUniformMatrix3fv(glm::value_ptr(normalMat), "normalMat", true);//转置矩阵
+            //法线矩阵为模型矩阵的左上3*3部分矩阵的逆矩阵的转置矩阵，去除W分量部分避免位移造成影响，用以适应非均匀拉伸时的法线方向
+            normalMat = glm::mat3(model);//取左上3*3部分矩阵
+            normalMat = glm::inverse(normalMat);//逆矩阵
+            myShader.setUniformMatrix3fv(glm::value_ptr(normalMat), "normalMat", true);//转置矩阵
 
-        //指定该VAO中的解析顶点指针和存在的EBO
-        glBindVertexArray(VAO);
-        //glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(unsigned), GL_UNSIGNED_INT, nullptr);//以EBO存储的索引顺序绘制三角形
-        myShader.setUniform3F("material.objectColor", 1.0f, 0.5f, 0.3f);
-        myShader.setUniform3F("material.specular", 0.1f, 0.1f, 0.1f);
-        myShader.setUniform1F("material.shininess", 32.0f);
-        glDrawArrays(GL_TRIANGLES, 0, sizeof(vertices)/sizeof(float)/2);//VBO内存储顶点顺序绘制
+            //指定该VAO中的解析顶点指针和存在的EBO
+            glBindVertexArray(VAO);
+            //glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(unsigned), GL_UNSIGNED_INT, nullptr);//以EBO存储的索引顺序绘制三角形
+            //myShader.setUniform3F("material.objectColor", 1.0f, 0.5f, 0.3f);
+            //myShader.setUniform3F("material.specular", 0.1f, 0.1f, 0.1f);
+            myShader.setUniform1I("material.textureColor", 0);//指定存在的纹理
+            myShader.setUniform1I("material.textureSpecular", 1);
+            myShader.setUniform1F("material.shininess", 32.0f);
+            glDrawArrays(GL_TRIANGLES, 0, sizeof(vertices)/sizeof(float)/8*3);//VBO内存储顶点顺序绘制
+        }
 
         //绘制灯
         lightShader.use();
+        lightShader.setUniform3F("lightColor", lightStrength);
         lightShader.setUniforMatrix4fv(glm::value_ptr(projection), "projection");
         lightShader.setUniforMatrix4fv(glm::value_ptr(view), "view");
         model = glm::mat4(1.0);
