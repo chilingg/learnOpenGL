@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 FragColor;
-in vec3 normal;
-in vec3 fragPos;
-in vec2 texCoord;
+in vec3 Normal;
+in vec3 FragPos;
+in vec2 TexCoord;
 
 struct Material
 {
@@ -12,6 +12,7 @@ struct Material
     vec3 specular;
     float shininess;
 };
+/*
 struct Light
 {
     vec3 lightPos;
@@ -29,48 +30,83 @@ struct Light
     float constant;
     float linear;
     float quadratic;
+};*/
+struct DirLight
+{
+    vec3 direction;
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+};
+struct PointLight
+{
+    vec3 position;
+
+    float constant;
+    float linear;
+    float quadratic;
+
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
 };
 
-uniform vec3 cameraPos;
-uniform Material material;
-uniform Light light;
+uniform vec3 CameraPos;
+uniform Material OneMaterial;
+uniform DirLight SunLight;
+uniform PointLight LuminousBody;
+
+vec3 calculateDirLight(DirLight light, vec3 normal, vec3 viewDir);
+vec3 calculatePointLight(PointLight light, vec3 normal, vec3 viewDir);
 
 void main(void)
 {
-    //平行光
-    vec3 parallelDir = normalize(-light.parallelDir);
-    float diff = max(dot(normalize(normal), parallelDir), 0.0);
-    vec3 parallel = light.parallel * vec3(texture2D(material.textureColor, texCoord)) * diff;
+    vec3 outputColor;
+    vec3 viewDir = normalize(CameraPos - FragPos);//顶点指向摄影机
+    vec3 normal = normalize(Normal);//经由法线矩阵变换后，标准化法向量
 
+    // 第一阶段：定向光照
+    outputColor += calculateDirLight(SunLight, normal, viewDir);
+    // 第二阶段：点光源
+    outputColor += calculatePointLight(LuminousBody, normal, viewDir);
+
+    FragColor = vec4(outputColor, 1.0);
+}
+
+vec3 calculateDirLight(DirLight light, vec3 normal, vec3 viewDir)
+{
+    vec3 lightDir = normalize(-light.direction);
     //环境光
-    vec3 ambient = light.ambient * vec3(texture2D(material.textureColor, texCoord));
-
-    //聚光灯
-    vec3 lightDir = normalize(light.lightPos - fragPos);//片段指向光源的标准向量
-    float theta = dot(lightDir, normalize(-light.direction));//片段向量与光源逆向量的夹角的余弦
-    float epsilon = light.cutoff - light.outCutoff;
-    //clamp约束返回值在指定范围内
-    float intensity = clamp((theta - light.outCutoff) / epsilon, 0.0, 1.0);
-
+    vec3 ambient = light.ambient * vec3(texture2D(OneMaterial.textureColor, TexCoord));
     //漫反射
-    //片段标准法向量与lightDir夹角的cos值，大于90度时为负取零，0~90度cos值为1-0
-    diff = max(dot(normalize(normal), lightDir), 0.0);
-    //决定漫反射量
-    vec3 diffuse = light.diffuse * vec3(texture2D(material.textureColor, texCoord)) * diff * intensity;
-
+    float diff = max(dot(normal, lightDir), 0.0);
+    vec3 diffuse = light.diffuse * diff * vec3(texture2D(OneMaterial.textureColor, TexCoord));
     //镜面光
-    vec3 viewDir = normalize(cameraPos - fragPos);//顶点指向摄影机
-    //反射向量，-lightDir为光源指向顶点
     vec3 reflectDir = reflect(-lightDir, normal);
-    //指数运算控制反光度大小，因底数为1~0，所以指数越高反光度越小
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    vec3 specular = light.illuminant * vec3(texture2D(material.textureSpecular, texCoord)) * spec;
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), OneMaterial.shininess);
+    vec3 specular = light.specular * spec * vec3(texture2D(OneMaterial.textureSpecular, TexCoord));
 
+    return ambient + diffuse + specular;
+}
+
+vec3 calculatePointLight(PointLight light, vec3 normal, vec3 viewDir)
+{
+    vec3 lightDir = normalize(light.position - FragPos);
+    //环境光
+    vec3 ambient = light.ambient * vec3(texture2D(OneMaterial.textureColor, TexCoord));
+    //漫反射
+    float diff = max(dot(normal, lightDir), 0.0);
+    vec3 diffuse = light.diffuse * diff * vec3(texture2D(OneMaterial.textureColor, TexCoord));
+    //镜面光
+    vec3 reflectDir = reflect(-lightDir, normal);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), OneMaterial.shininess);
+    vec3 specular = light.specular * spec * vec3(texture2D(OneMaterial.textureSpecular, TexCoord));
     //衰减
-    float distance = length(light.lightPos - fragPos);//片段与光源的距离
+    float distance = length(light.position - FragPos);//片段与光源的距离
     float attenuation = 1.0 / (light.constant + light.linear*distance + light.quadratic*distance*distance);
+    ambient *= attenuation;
     diffuse *= attenuation;
     specular *= attenuation;
 
-    FragColor = vec4(parallel + ambient + diffuse + specular, 1.0);
+    return ambient + diffuse + specular;
 }

@@ -209,25 +209,30 @@ int main()
     //法线矩阵
     glm::mat3 normalMat(1.0f);
 
-    glm::vec3 lightPos(0.0f, 0.0f, -2.0f);//光源坐标
-    //光量
-    glm::vec3 lightStrength(1.0f, 1.0f, 1.0f);//高光（光源）量
-    glm::vec3 ambientStrength = lightStrength * 0.1f;//环境光量
-    glm::vec3 diffuse = lightStrength - ambientStrength;//漫反射量（保持本身颜色）
-    glm::vec3 parallelDir(-0.2f, -1.0f, -0.3f);//平行光源方向
-    glm::vec3 parallel = diffuse * 0.2f;//平行光源量
+    glm::vec3 ambientStrength;//环境光量
+    glm::vec3 diffuse;//漫反射量（保持本身颜色）
     myShader.use();
-    myShader.setUniform3F("light.parallelDir", parallelDir);
-    myShader.setUniform3F("light.parallel", parallel);
-    myShader.setUniform3F("light.illuminant", lightStrength);
-    myShader.setUniform3F("light.ambient", ambientStrength);
-    myShader.setUniform3F("light.diffuse",  diffuse);
-    myShader.setUniform1F("light.constant", 1.0f);
-    myShader.setUniform1F("light.linear", 0.09f);
-    myShader.setUniform1F("light.quadratic", 0.032f);
-    myShader.setUniform3F("light.direction", 0.0f, 0.0f, -1.0f);
-    myShader.setUniform1F("light.cutoff", glm::cos(glm::radians(16.0f)));//使用余弦是为了与点乘结果比较
-    myShader.setUniform1F("light.outCutoff", glm::cos(glm::radians(20.0f)));
+    //平行光
+    glm::vec3 lightStrength(0.3f, 0.3f, 0.3f);//高光（光源）量
+    ambientStrength = lightStrength * 0.1f;//环境光量
+    diffuse = lightStrength - ambientStrength;//漫反射量（保持本身颜色）
+    glm::vec3 parallelDir(-0.2f, -1.0f, -0.3f);//平行光源方向
+    myShader.setUniform3F("SunLight.direction", parallelDir);
+    myShader.setUniform3F("SunLight.ambient", ambientStrength);
+    myShader.setUniform3F("SunLight.diffuse",  diffuse);
+    myShader.setUniform3F("SunLight.specular", lightStrength);
+    //点光源
+    glm::vec3 pointlightStrength = glm::vec3(1.0f, 1.0f, 1.0f);
+    ambientStrength = pointlightStrength * 0.1f;//环境光量
+    diffuse = pointlightStrength - ambientStrength;//漫反射量（保持本身颜色）
+    glm::vec3 lightPos(0.0f, 0.0f, -2.0f);//光源坐标
+    myShader.setUniform1F("LuminousBody.constant", 1.0f);
+    myShader.setUniform1F("LuminousBody.linear", 0.09f);
+    myShader.setUniform1F("LuminousBody.quadratic", 0.032f);
+    myShader.setUniform3F("LuminousBody.ambient", ambientStrength);
+    myShader.setUniform3F("LuminousBody.diffuse",  diffuse);
+    myShader.setUniform3F("LuminousBody.specular", pointlightStrength);
+    myShader.setUniform3F("LuminousBody.position", lightPos);
 
     //渲染循环
     while(!glfwWindowShouldClose(window))
@@ -249,8 +254,8 @@ int main()
 
         //指定着色器程序对象
         myShader.use();
-        myShader.setUniform3F("light.lightPos", lightPos);
-        myShader.setUniform3F("cameraPos", cameraPos);
+        myShader.setUniform3F("LuminousBody.position", lightPos);
+        myShader.setUniform3F("CameraPos", cameraPos);
 
         projection = glm::mat4(1.0);
         projection = glm::perspective(glm::radians(45.0f), SCR_WIDTH/SCR_HEIGHT, 0.1f, 100.f);
@@ -282,15 +287,15 @@ int main()
             //glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(unsigned), GL_UNSIGNED_INT, nullptr);//以EBO存储的索引顺序绘制三角形
             //myShader.setUniform3F("material.objectColor", 1.0f, 0.5f, 0.3f);
             //myShader.setUniform3F("material.specular", 0.1f, 0.1f, 0.1f);
-            myShader.setUniform1I("material.textureColor", 0);//指定存在的纹理
-            myShader.setUniform1I("material.textureSpecular", 1);
-            myShader.setUniform1F("material.shininess", 32.0f);
+            myShader.setUniform1I("OneMaterial.textureColor", 0);//指定存在的纹理
+            myShader.setUniform1I("OneMaterial.textureSpecular", 1);
+            myShader.setUniform1F("OneMaterial.shininess", 32.0f);
             glDrawArrays(GL_TRIANGLES, 0, sizeof(vertices)/sizeof(float)/8*3);//VBO内存储顶点顺序绘制
         }
 
         //绘制灯
         lightShader.use();
-        lightShader.setUniform3F("lightColor", lightStrength);
+        lightShader.setUniform3F("lightColor", 0.3f+pointlightStrength);
         lightShader.setUniforMatrix4fv(glm::value_ptr(projection), "projection");
         lightShader.setUniforMatrix4fv(glm::value_ptr(view), "view");
         model = glm::mat4(1.0);
