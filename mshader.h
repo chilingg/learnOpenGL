@@ -8,21 +8,17 @@
 #include <sstream>
 #include <iostream>
 
-using std::string;
-using std::ifstream;
-using std::stringstream;
-
 class MShader
 {
 public:
     MShader(const GLchar* vertexPath, const GLchar* fragmentPath);
     void use();//激活并使用
-    void setUniform1F(const string &name, float value) const;
-    void setUniform1I(const string &name, int value) const;
-    void setUniform3F(const string &name, float value1, float value2, float value3) const;
-    void setUniform3F(const string &name, glm::vec3 vec) const;
-    void setUniforMatrix4fv(float *ptr, const char *name);
-    void setUniformMatrix3fv(float *ptr, const char *name, bool transpose = false);
+    void setUniform1F(const std::string &name, float value) const;
+    void setUniform1I(const std::string &name, int value) const;
+    void setUniform3F(const std::string &name, float value1, float value2, float value3) const;
+    void setUniform3F(const std::string &name, glm::vec3 vec) const;
+    void setUniforMatrix4fv(float *ptr, const char *name) const;
+    void setUniformMatrix3fv(float *ptr, const char *name, bool transpose = false) const;
 
     unsigned int shaderProgramID;
 };
@@ -64,7 +60,7 @@ inline void MShader::setUniform3F(const std::string &name, glm::vec3 vec) const
     setUniform3F(name, vec.x, vec.y, vec.z);
 }
 
-inline void MShader::setUniforMatrix4fv(float *ptr, const char *name)
+inline void MShader::setUniforMatrix4fv(float *ptr, const char *name) const
 {
     int loc = glGetUniformLocation(shaderProgramID, name);
     if(loc != -1)
@@ -73,7 +69,7 @@ inline void MShader::setUniforMatrix4fv(float *ptr, const char *name)
         std::cerr << "No find uniform location " << name << std::endl;
 }
 
-inline void MShader::setUniformMatrix3fv(float *ptr, const char *name, bool transpose)
+inline void MShader::setUniformMatrix3fv(float *ptr, const char *name, bool transpose) const
 {
     int loc = glGetUniformLocation(shaderProgramID, name);
     if(loc != -1)

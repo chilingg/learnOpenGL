@@ -8,7 +8,9 @@ SOURCES += \
         main.cpp \
     glad.c \
     mshader.cpp \
-    mmatrix.cpp
+    mmatrix.cpp \
+    mesh.cpp \
+    model3d.cpp
 
 win32{
 LIBS += -L$$PWD/../bin/libs/ -lglfw3
@@ -32,7 +34,9 @@ HEADERS += \
     stb_image.h \
     stb_image_implementation.h \
     mvec.h \
-    mmatrix.h
+    mmatrix.h \
+    mesh.h \
+    model3d.h
 
 RESOURCES +=
 
