@@ -13,7 +13,8 @@ SOURCES += \
     model3d.cpp
 
 win32{
-LIBS += -L$$PWD/../bin/libs/ -lglfw3
+LIBS += -L$$PWD/../bin/libs/ -lglfw3 \
+    -L$$PWD/../bin/libs/ -lassimp
 
 INCLUDEPATH += $$PWD/../bin/include
 DEPENDPATH += $$PWD/../bin/include
@@ -31,12 +32,12 @@ DISTFILES += \
 
 HEADERS += \
     mshader.h \
-    stb_image.h \
-    stb_image_implementation.h \
     mvec.h \
     mmatrix.h \
     mesh.h \
-    model3d.h
+    model3d.h \
+    stb_image.h \
+    stb_image_implementation.h
 
 RESOURCES +=
 

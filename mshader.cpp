@@ -3,20 +3,20 @@
 
 MShader::MShader(const GLchar *vertexPath, const GLchar *fragmentPath)
 {
-    string vertexCode;
-    string fragmentCode;
-    ifstream vShaderFile;
-    ifstream fShaderFile;
+    std::string vertexCode;
+    std::string fragmentCode;
+    std::ifstream vShaderFile;
+    std::ifstream fShaderFile;
     //若状态被置为failbit或badbit，则抛出异常
-    vShaderFile.exceptions(ifstream::failbit | ifstream::badbit);
-    fShaderFile.exceptions(ifstream::failbit | ifstream::badbit);
+    vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     try
     {
         //打开文件
         vShaderFile.open(vertexPath);
         fShaderFile.open(fragmentPath);
         //读取文件的缓冲内容到数据流中
-        stringstream vShaderStream, fShaderStream;
+        std::stringstream vShaderStream, fShaderStream;
         vShaderStream << vShaderFile.rdbuf();
         fShaderStream << fShaderFile.rdbuf();
         //关闭文件处理器
@@ -26,7 +26,7 @@ MShader::MShader(const GLchar *vertexPath, const GLchar *fragmentPath)
         vertexCode = vShaderStream.str();
         fragmentCode = fShaderStream.str();
     }
-    catch(ifstream::failure e)
+    catch(std::ifstream::failure e)
     {
         std::cerr << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
     }

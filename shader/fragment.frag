@@ -6,31 +6,12 @@ in vec2 TexCoord;
 
 struct Material
 {
-    sampler2D textureColor;
-    sampler2D textureSpecular;
-    vec3 objectColor;
-    vec3 specular;
+    sampler2D texture_diffuse1;
+    sampler2D texture_specular1;
+    sampler2D texture_diffuse2;
+    sampler2D texture_specular2;
     float shininess;
 };
-/*
-struct Light
-{
-    vec3 lightPos;
-    vec3 direction;
-    float cutoff;//光锥半径余弦
-    float outCutoff;//衰减光锥半径余弦
-    vec3 parallelDir;
-
-    vec3 parallel;
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 illuminant;
-
-    //衰减函数系数
-    float constant;
-    float linear;
-    float quadratic;
-};*/
 struct DirLight
 {
     vec3 direction;
@@ -77,14 +58,14 @@ vec3 calculateDirLight(DirLight light, vec3 normal, vec3 viewDir)
 {
     vec3 lightDir = normalize(-light.direction);
     //环境光
-    vec3 ambient = light.ambient * vec3(texture2D(OneMaterial.textureColor, TexCoord));
+    vec3 ambient = light.ambient * vec3(texture2D(OneMaterial.texture_diffuse1, TexCoord));
     //漫反射
     float diff = max(dot(normal, lightDir), 0.0);
-    vec3 diffuse = light.diffuse * diff * vec3(texture2D(OneMaterial.textureColor, TexCoord));
+    vec3 diffuse = light.diffuse * diff * vec3(texture2D(OneMaterial.texture_diffuse1, TexCoord));
     //镜面光
     vec3 reflectDir = reflect(-lightDir, normal);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), OneMaterial.shininess);
-    vec3 specular = light.specular * spec * vec3(texture2D(OneMaterial.textureSpecular, TexCoord));
+    vec3 specular = light.specular * spec * vec3(texture2D(OneMaterial.texture_specular1, TexCoord));
 
     return ambient + diffuse + specular;
 }
@@ -93,14 +74,14 @@ vec3 calculatePointLight(PointLight light, vec3 normal, vec3 viewDir)
 {
     vec3 lightDir = normalize(light.position - FragPos);
     //环境光
-    vec3 ambient = light.ambient * vec3(texture2D(OneMaterial.textureColor, TexCoord));
+    vec3 ambient = light.ambient * vec3(texture2D(OneMaterial.texture_diffuse1, TexCoord));
     //漫反射
     float diff = max(dot(normal, lightDir), 0.0);
-    vec3 diffuse = light.diffuse * diff * vec3(texture2D(OneMaterial.textureColor, TexCoord));
+    vec3 diffuse = light.diffuse * diff * vec3(texture2D(OneMaterial.texture_diffuse1, TexCoord));
     //镜面光
     vec3 reflectDir = reflect(-lightDir, normal);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), OneMaterial.shininess);
-    vec3 specular = light.specular * spec * vec3(texture2D(OneMaterial.textureSpecular, TexCoord));
+    vec3 specular = light.specular * spec * vec3(texture2D(OneMaterial.texture_specular1, TexCoord));
     //衰减
     float distance = length(light.position - FragPos);//片段与光源的距离
     float attenuation = 1.0 / (light.constant + light.linear*distance + light.quadratic*distance*distance);

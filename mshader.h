@@ -12,7 +12,7 @@ class MShader
 {
 public:
     MShader(const GLchar* vertexPath, const GLchar* fragmentPath);
-    void use();//激活并使用
+    void use() const;//激活并使用
     void setUniform1F(const std::string &name, float value) const;
     void setUniform1I(const std::string &name, int value) const;
     void setUniform3F(const std::string &name, float value1, float value2, float value3) const;
@@ -23,7 +23,7 @@ public:
     unsigned int shaderProgramID;
 };
 
-inline void MShader::use()
+inline void MShader::use() const
 {
     glUseProgram(shaderProgramID);
 }
