@@ -178,6 +178,10 @@ int main()
         view = glm::rotate(view, rotateView.y, {0.0f, 1.0f, 0.0f});
         view = glm::translate(view, -cameraPos);
 
+        //剔除背面（仅针对闭合形状）
+        glEnable(GL_CULL_FACE);
+        glFrontFace(GL_CW);
+
         //绘制模型
         myShader.use();
         myShader.setUniform3F("LuminousBody.position", lightPos);
@@ -203,6 +207,9 @@ int main()
         glBindVertexArray(lightVAO);
         glDrawArrays(GL_TRIANGLES, 0, pointeNumber);//VBO内存储顶点顺序绘制
         glBindVertexArray(0);
+
+        //取消背面剔除
+        glDisable(GL_CULL_FACE);
 
         //绘制不透明玻璃（需最后绘制，因混合只能使用当前的颜色缓冲）
         transparentShader.use();
@@ -296,47 +303,48 @@ int createCube(unsigned *lightVAO, unsigned *lightVBO)
     //以标准化设备坐标指定多个顶点
     float vertices[] = {
         // positions
+        // Back face
         -0.5f, -0.5f, -0.5f,
+         0.5f,  0.5f, -0.5f,
          0.5f, -0.5f, -0.5f,
          0.5f,  0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
+        -0.5f,  0.5f, -0.5f,
+        // Front face
+        -0.5f, -0.5f,  0.5f,
+         0.5f, -0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
+        -0.5f, -0.5f,  0.5f,
+        // Left face
+        -0.5f,  0.5f,  0.5f,
         -0.5f,  0.5f, -0.5f,
         -0.5f, -0.5f, -0.5f,
-
-        -0.5f, -0.5f,  0.5f,
-         0.5f, -0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f,
-        -0.5f, -0.5f,  0.5f,
-
-        -0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f,
         -0.5f, -0.5f, -0.5f,
         -0.5f, -0.5f,  0.5f,
         -0.5f,  0.5f,  0.5f,
-
+        // Right face
          0.5f,  0.5f,  0.5f,
+         0.5f, -0.5f, -0.5f,
          0.5f,  0.5f, -0.5f,
          0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f,  0.5f,
          0.5f,  0.5f,  0.5f,
-
+         0.5f, -0.5f,  0.5f,
+        // Bottom face
         -0.5f, -0.5f, -0.5f,
          0.5f, -0.5f, -0.5f,
          0.5f, -0.5f,  0.5f,
          0.5f, -0.5f,  0.5f,
         -0.5f, -0.5f,  0.5f,
         -0.5f, -0.5f, -0.5f,
-
+        // Top face
         -0.5f,  0.5f, -0.5f,
+         0.5f,  0.5f,  0.5f,
          0.5f,  0.5f, -0.5f,
          0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f, -0.5f,
         -0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f, -0.5f
     };
     //管理光源的VAO
     glGenVertexArrays(1, lightVAO);
