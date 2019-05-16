@@ -69,7 +69,7 @@ int main()
     //设置窗口（视口）的维度
     glViewport(0, 0, static_cast<int>(SCR_WIDTH), static_cast<int>(SCR_HEIGHT));//lower left(-1 ~ 1)
     //设置清空屏幕所用的颜色（底色）
-    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     //忽略不必要的Z轴片段
     glEnable(GL_DEPTH_TEST);
 
@@ -153,8 +153,8 @@ int main()
     glm::vec3 diffuse;//漫反射量（保持本身颜色）
     myShader.use();
     //平行光
-    glm::vec3 lightStrength(10.0f, 10.0f, 10.0f);//高光（光源）量
-    ambientStrength = lightStrength * 0.1f;//环境光量
+    glm::vec3 lightStrength(0.3f, 0.3f, 0.3f);//高光（光源）量
+    ambientStrength = lightStrength * 0.3f;//环境光量
     diffuse = lightStrength - ambientStrength;//漫反射量（保持本身颜色）
     glm::vec3 parallelDir(-0.2f, -1.0f, -0.3f);//平行光源方向
     myShader.setUniform3F("SunLight.direction", parallelDir);
@@ -165,7 +165,7 @@ int main()
     glm::vec3 pointlightStrength = glm::vec3(1.0f, 1.0f, 1.0f);
     ambientStrength = pointlightStrength * 0.1f;//环境光量
     diffuse = pointlightStrength - ambientStrength;//漫反射量（保持本身颜色）
-    glm::vec3 lightPos(0.0f, 0.0f, -2.0f);//光源坐标
+    glm::vec3 lightPos(0.0f, 0.0f, 0.0f);//光源坐标
     myShader.setUniform1F("LuminousBody.constant", 1.0f);
     myShader.setUniform1F("LuminousBody.linear", 0.09f);
     myShader.setUniform1F("LuminousBody.quadratic", 0.032f);
@@ -209,7 +209,7 @@ int main()
 
         //绘制模型
         model = glm::mat4(1.0);
-        model = glm::translate(model, {0.0f, -3.0f, -4.0f});
+        model = glm::translate(model, {0.0f, -2.0f, -3.0f});
         model = glm::scale(model, glm::vec3(0.2f));
         myShader.setUniforMatrix4fv(glm::value_ptr(model), "model");
         myShader.setUniform1F("OneMaterial.shininess", 32.0f);
