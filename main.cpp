@@ -32,7 +32,7 @@ void framebuffer_size_callback(GLFWwindow *, int width, int height);
 void processInput(GLFWwindow *window);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 
-void printMat(const float *mat, unsigned column, unsigned row);
+int createCube(unsigned *lightVAO, unsigned *lightVBO);
 
 int main()
 {
@@ -72,64 +72,15 @@ int main()
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     //忽略不必要的Z轴片段
     glEnable(GL_DEPTH_TEST);
+    //启用半透明混合
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);//设置源与目标的混个因子
+    //glDisable(GL_BLEND);
 
-    //以标准化设备坐标指定多个顶点
-    float vertices[] = {
-        // positions
-        -0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
-        -0.5f,  0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f,
-
-        -0.5f, -0.5f,  0.5f,
-         0.5f, -0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f,
-        -0.5f, -0.5f,  0.5f,
-
-        -0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f,
-        -0.5f, -0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f,
-
-         0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-
-        -0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f,  0.5f,
-         0.5f, -0.5f,  0.5f,
-        -0.5f, -0.5f,  0.5f,
-        -0.5f, -0.5f, -0.5f,
-
-        -0.5f,  0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
-         0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f, -0.5f
-    };
-    //管理光源的VAO
+    //创建点光源
     unsigned lightVAO, lightVBO;
-    glGenVertexArrays(1, &lightVAO);
-    glGenBuffers(1, &lightVBO);
-    glBindVertexArray(lightVAO);//记录以下操作
-    glBindBuffer(GL_ARRAY_BUFFER, lightVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    //设置灯的顶点属性
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), nullptr);//位置属性
-    glEnableVertexAttribArray(0);
-    //显式解绑VAO
-    glBindVertexArray(0);
+    int pointeNumber;
+    pointeNumber = createCube(&lightVAO, &lightVBO);
 
     MShader myShader("../learnOpenGL/shader/vertex.vert",
                      "../learnOpenGL/shader/fragment.frag");
@@ -137,6 +88,9 @@ int main()
 
     MShader lightShader("../learnOpenGL/shader/vertex.vert",
                      "../learnOpenGL/shader/lamp.frag");
+
+    MShader transparentShader("../learnOpenGL/shader/vertex.vert",
+                     "../learnOpenGL/shader/transparent.frag");
 
     Model3d mModel("../learnOpenGL/model/nanosuit/nanosuit.obj");
 
@@ -165,7 +119,7 @@ int main()
     glm::vec3 pointlightStrength = glm::vec3(1.0f, 1.0f, 1.0f);
     ambientStrength = pointlightStrength * 0.1f;//环境光量
     diffuse = pointlightStrength - ambientStrength;//漫反射量（保持本身颜色）
-    glm::vec3 lightPos(0.0f, 0.0f, 0.0f);//光源坐标
+    glm::vec3 lightPos(0.0f, 0.0f, -1.0f);//光源坐标
     myShader.setUniform1F("LuminousBody.constant", 1.0f);
     myShader.setUniform1F("LuminousBody.linear", 0.09f);
     myShader.setUniform1F("LuminousBody.quadratic", 0.032f);
@@ -173,6 +127,28 @@ int main()
     myShader.setUniform3F("LuminousBody.diffuse",  diffuse);
     myShader.setUniform3F("LuminousBody.specular", pointlightStrength);
     myShader.setUniform3F("LuminousBody.position", lightPos);
+
+    //不透明玻璃
+    float vertices[] = {
+        // positions
+        -0.5f, -0.5f,  0.0f,
+         0.5f, -0.5f,  0.0f,
+         0.5f,  0.5f,  0.0f,
+         0.5f,  0.5f,  0.0f,
+        -0.5f,  0.5f,  0.0f,
+        -0.5f, -0.5f,  0.0f,
+    };
+    unsigned trspVAO, trspVBO;
+    glGenVertexArrays(1, &trspVAO);
+    glGenBuffers(1, &trspVBO);
+    glBindVertexArray(trspVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, trspVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    //设置玻璃的顶点属性
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), nullptr);//位置属性
+    glEnableVertexAttribArray(0);
+    //显式解绑VAO
+    glBindVertexArray(0);
 
     //渲染循环
     while(!glfwWindowShouldClose(window))
@@ -193,22 +169,22 @@ int main()
         lightPos.x = static_cast<float>(sin(glfwGetTime()));
 
         //指定着色器程序对象
-        myShader.use();
-        myShader.setUniform3F("LuminousBody.position", lightPos);
-        myShader.setUniform3F("CameraPos", cameraPos);
 
-        projection = glm::mat4(1.0);
+        projection = glm::mat4(1.0f);
         projection = glm::perspective(glm::radians(45.0f), SCR_WIDTH/SCR_HEIGHT, 0.1f, 100.f);
-        myShader.setUniforMatrix4fv(glm::value_ptr(projection), "projection");
 
-        view = glm::mat4(1.0);
+        view = glm::mat4(1.0f);
         view = glm::rotate(view, rotateView.x, {1.0f, 0.0f, 0.0f});
         view = glm::rotate(view, rotateView.y, {0.0f, 1.0f, 0.0f});
         view = glm::translate(view, -cameraPos);
-        myShader.setUniforMatrix4fv(glm::value_ptr(view), "view");
 
         //绘制模型
-        model = glm::mat4(1.0);
+        myShader.use();
+        myShader.setUniform3F("LuminousBody.position", lightPos);
+        myShader.setUniform3F("CameraPos", cameraPos);
+        myShader.setUniforMatrix4fv(glm::value_ptr(projection), "projection");
+        myShader.setUniforMatrix4fv(glm::value_ptr(view), "view");
+        model = glm::mat4(1.0f);
         model = glm::translate(model, {0.0f, -2.0f, -3.0f});
         model = glm::scale(model, glm::vec3(0.2f));
         myShader.setUniforMatrix4fv(glm::value_ptr(model), "model");
@@ -220,11 +196,23 @@ int main()
         lightShader.setUniform3F("lightColor", 0.3f+pointlightStrength);
         lightShader.setUniforMatrix4fv(glm::value_ptr(projection), "projection");
         lightShader.setUniforMatrix4fv(glm::value_ptr(view), "view");
-        model = glm::mat4(1.0);
+        model = glm::mat4(1.0f);
         model = glm::translate(model, lightPos);
         model = glm::scale(model, glm::vec3(0.2f));
         lightShader.setUniforMatrix4fv(glm::value_ptr(model), "model");
         glBindVertexArray(lightVAO);
+        glDrawArrays(GL_TRIANGLES, 0, pointeNumber);//VBO内存储顶点顺序绘制
+        glBindVertexArray(0);
+
+        //绘制不透明玻璃（需最后绘制，因混合只能使用当前的颜色缓冲）
+        transparentShader.use();
+        transparentShader.setUniforMatrix4fv(glm::value_ptr(projection), "projection");
+        transparentShader.setUniforMatrix4fv(glm::value_ptr(view), "view");
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, {0.0f, 0.0f, -2.0f});
+        model = glm::scale(model, glm::vec3(0.5f));
+        transparentShader.setUniforMatrix4fv(glm::value_ptr(model), "model");
+        glBindVertexArray(trspVAO);
         glDrawArrays(GL_TRIANGLES, 0, sizeof(vertices)/sizeof(float)/3);//VBO内存储顶点顺序绘制
         glBindVertexArray(0);
 
@@ -303,15 +291,64 @@ void mouse_callback(GLFWwindow*, double xpos, double ypos)
     oldY = newY;
 }
 
-void printMat(const float *mat, unsigned column, unsigned row)
+int createCube(unsigned *lightVAO, unsigned *lightVBO)
 {
-    for(unsigned i = 0; i < row; ++i)
-    {
-        for(unsigned j = 0; j < column; ++j)
-        {
-            std::cout << *(mat+((i*column)+j)) << ',';
-        }
-        std::cout << '\n';
-    }
-    std::cout << std::endl;
+    //以标准化设备坐标指定多个顶点
+    float vertices[] = {
+        // positions
+        -0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f, -0.5f,
+         0.5f,  0.5f, -0.5f,
+         0.5f,  0.5f, -0.5f,
+        -0.5f,  0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
+
+        -0.5f, -0.5f,  0.5f,
+         0.5f, -0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
+        -0.5f, -0.5f,  0.5f,
+
+        -0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
+
+         0.5f,  0.5f,  0.5f,
+         0.5f,  0.5f, -0.5f,
+         0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
+
+        -0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f,  0.5f,
+         0.5f, -0.5f,  0.5f,
+        -0.5f, -0.5f,  0.5f,
+        -0.5f, -0.5f, -0.5f,
+
+        -0.5f,  0.5f, -0.5f,
+         0.5f,  0.5f, -0.5f,
+         0.5f,  0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f, -0.5f
+    };
+    //管理光源的VAO
+    glGenVertexArrays(1, lightVAO);
+    glGenBuffers(1, lightVBO);
+    glBindVertexArray(*lightVAO);//记录以下操作
+    glBindBuffer(GL_ARRAY_BUFFER, *lightVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    //设置灯的顶点属性
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), nullptr);//位置属性
+    glEnableVertexAttribArray(0);
+    //显式解绑VAO
+    glBindVertexArray(0);
+
+    return sizeof(vertices)/sizeof(float)/3;
 }
