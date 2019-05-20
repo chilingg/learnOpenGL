@@ -24,6 +24,7 @@ public:
     Mesh(const std::vector<Vertex> &vertice,
          const std::vector<unsigned> &indices,
          const std::vector<Texture> &textrue);
+    ~Mesh();
     void draw(const MShader &shader) const;
 
     //网格数据

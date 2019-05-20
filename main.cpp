@@ -82,6 +82,28 @@ int main()
     int pointeNumber;
     pointeNumber = createCube(&lightVAO, &lightVBO);
 
+    //不透明玻璃
+    float vertices[] = {
+        // positions
+        -0.5f, -0.5f,  0.0f,
+         0.5f, -0.5f,  0.0f,
+         0.5f,  0.5f,  0.0f,
+         0.5f,  0.5f,  0.0f,
+        -0.5f,  0.5f,  0.0f,
+        -0.5f, -0.5f,  0.0f,
+    };
+    unsigned trspVAO, trspVBO;
+    glGenVertexArrays(1, &trspVAO);
+    glGenBuffers(1, &trspVBO);
+    glBindVertexArray(trspVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, trspVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    //设置玻璃的顶点属性
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), nullptr);//位置属性
+    glEnableVertexAttribArray(0);
+    //显式解绑VAO
+    glBindVertexArray(0);
+
     MShader myShader("../learnOpenGL/shader/vertex.vert",
                      "../learnOpenGL/shader/fragment.frag");
     //glUniform3f(glGetUniformLocation(myShader.shaderProgramID, "objectColor"), 1.0f, 0.5f, 0.31f); // 手动设置
@@ -128,28 +150,6 @@ int main()
     myShader.setUniform3F("LuminousBody.specular", pointlightStrength);
     myShader.setUniform3F("LuminousBody.position", lightPos);
 
-    //不透明玻璃
-    float vertices[] = {
-        // positions
-        -0.5f, -0.5f,  0.0f,
-         0.5f, -0.5f,  0.0f,
-         0.5f,  0.5f,  0.0f,
-         0.5f,  0.5f,  0.0f,
-        -0.5f,  0.5f,  0.0f,
-        -0.5f, -0.5f,  0.0f,
-    };
-    unsigned trspVAO, trspVBO;
-    glGenVertexArrays(1, &trspVAO);
-    glGenBuffers(1, &trspVBO);
-    glBindVertexArray(trspVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, trspVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    //设置玻璃的顶点属性
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), nullptr);//位置属性
-    glEnableVertexAttribArray(0);
-    //显式解绑VAO
-    glBindVertexArray(0);
-
     //渲染循环
     while(!glfwWindowShouldClose(window))
     {
@@ -166,6 +166,7 @@ int main()
         lastTime = currentTime;
         cameraSpeed = 2.5f * deltaTime;
 
+        //移动光源
         lightPos.x = static_cast<float>(sin(glfwGetTime()));
 
         //指定着色器程序对象
@@ -233,6 +234,8 @@ int main()
     //正确释放/删除之前分配的所有资源
     glDeleteBuffers(1, &lightVBO);
     glDeleteBuffers(1, &lightVAO);
+    glDeleteBuffers(1, &trspVBO);
+    glDeleteBuffers(1, &trspVAO);
     glfwTerminate();
 
     return 0;
