@@ -92,25 +92,11 @@ int main()
         -0.5f,  0.5f,  0.0f,
         -0.5f, -0.5f,  0.0f,
     };
-    unsigned trspVAO, trspVBO;
-    glGenVertexArrays(1, &trspVAO);
-    glGenBuffers(1, &trspVBO);
-    glBindVertexArray(trspVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, trspVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    //设置玻璃的顶点属性
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), nullptr);//位置属性
-    glEnableVertexAttribArray(0);
-    //显式解绑VAO
-    glBindVertexArray(0);
 
     MShader myShader("../learnOpenGL/shader/vertex.vert",
                      "../learnOpenGL/shader/fragment.frag");
-    //glUniform3f(glGetUniformLocation(myShader.shaderProgramID, "objectColor"), 1.0f, 0.5f, 0.31f); // 手动设置
-
     MShader lightShader("../learnOpenGL/shader/vertex.vert",
                      "../learnOpenGL/shader/lamp.frag");
-
     MShader transparentShader("../learnOpenGL/shader/vertex.vert",
                      "../learnOpenGL/shader/transparent.frag");
 
@@ -167,7 +153,7 @@ int main()
         cameraSpeed = 2.5f * deltaTime;
 
         //移动光源
-        lightPos.x = static_cast<float>(sin(glfwGetTime()));
+        //lightPos.x = static_cast<float>(sin(glfwGetTime()));
 
         //指定着色器程序对象
 
@@ -181,7 +167,7 @@ int main()
 
         //剔除背面（仅针对闭合形状）
         glEnable(GL_CULL_FACE);
-        glFrontFace(GL_CW);
+        glFrontFace(GL_CCW);//定义顺时针的面为正向面
 
         //绘制模型
         myShader.use();
@@ -212,18 +198,6 @@ int main()
         //取消背面剔除
         glDisable(GL_CULL_FACE);
 
-        //绘制不透明玻璃（需最后绘制，因混合只能使用当前的颜色缓冲）
-        transparentShader.use();
-        transparentShader.setUniforMatrix4fv(glm::value_ptr(projection), "projection");
-        transparentShader.setUniforMatrix4fv(glm::value_ptr(view), "view");
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, {0.0f, 0.0f, -2.0f});
-        model = glm::scale(model, glm::vec3(0.5f));
-        transparentShader.setUniforMatrix4fv(glm::value_ptr(model), "model");
-        glBindVertexArray(trspVAO);
-        glDrawArrays(GL_TRIANGLES, 0, sizeof(vertices)/sizeof(float)/3);//VBO内存储顶点顺序绘制
-        glBindVertexArray(0);
-
         //检查并调用事件，交换缓冲----
         //交换颜色缓冲（它是一个储存着GLFW窗口每一个像素颜色值的大缓冲），它在这一迭代中被用来绘制
         glfwSwapBuffers(window);
@@ -234,8 +208,6 @@ int main()
     //正确释放/删除之前分配的所有资源
     glDeleteBuffers(1, &lightVBO);
     glDeleteBuffers(1, &lightVAO);
-    glDeleteBuffers(1, &trspVBO);
-    glDeleteBuffers(1, &trspVAO);
     glfwTerminate();
 
     return 0;

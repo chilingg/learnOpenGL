@@ -23,6 +23,7 @@ class Model3d
     public:
         /*  函数   */
         Model3d(const char *path) { loadModel(path); }
+        ~Model3d();
         void draw(MShader shader);
 
     private:

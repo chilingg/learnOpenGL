@@ -26,6 +26,7 @@ public:
          const std::vector<Texture> &textrue);
     ~Mesh();
     void draw(const MShader &shader) const;
+    void deleteBuffer() const;
 
     //网格数据
     std::vector<Vertex> vertices;

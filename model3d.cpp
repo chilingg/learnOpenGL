@@ -1,6 +1,12 @@
 #include "model3d.h"
 #include "stb_image_implementation.h"
 
+Model3d::~Model3d()
+{
+    for(auto mesh : meshes)
+        mesh.deleteBuffer();
+}
+
 void Model3d::loadModel(const std::string &path)
 {
     Assimp::Importer import;

@@ -13,9 +13,6 @@ Mesh::Mesh(const std::vector<Mesh::Vertex> &vertice,
 
 Mesh::~Mesh()
 {
-    glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
-    glDeleteBuffers(1, &VAO);
 }
 
 void Mesh::draw(const MShader &shader) const
@@ -49,6 +46,13 @@ void Mesh::draw(const MShader &shader) const
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
+}
+
+void Mesh::deleteBuffer() const
+{
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
+    glDeleteBuffers(1, &VAO);
 }
 
 void Mesh::setupMesh()
