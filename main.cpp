@@ -82,23 +82,63 @@ int main()
     int pointeNumber;
     pointeNumber = createCube(&lightVAO, &lightVBO);
 
-    //不透明玻璃
-    float vertices[] = {
+    //渲染到纹理
+    unsigned framebuffer;
+    glGenFramebuffers(1, &framebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    //生成纹理
+    unsigned texColorBuffer;
+    glGenTextures(1, &texColorBuffer);
+    glBindTexture(GL_TEXTURE_2D, texColorBuffer);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    //附加到当前绑定的帧缓冲对象
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer, 0);
+    //创建渲染缓冲对象
+    unsigned rbo;
+    glGenRenderbuffers(1, &rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    //附加到当前绑定的帧缓冲对象
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+    //检查帧缓冲是否完整
+    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    //平面
+    float plane[] = {
         // positions
-        -0.5f, -0.5f,  0.0f,
-         0.5f, -0.5f,  0.0f,
-         0.5f,  0.5f,  0.0f,
-         0.5f,  0.5f,  0.0f,
-        -0.5f,  0.5f,  0.0f,
-        -0.5f, -0.5f,  0.0f,
+        -0.5f, -0.25f,  0.0f,    0.0f,   0.0f,
+         0.5f, -0.25f,  0.0f,    1.0f,   0.0f,
+         0.5f,  0.5f,  0.0f,    1.0f,   1.0f,
+         0.5f,  0.5f,  0.0f,    1.0f,   1.0f,
+        -0.5f,  0.5f,  0.0f,    0.0f,   1.0f,
+        -0.5f, -0.25f,  0.0f,    0.0f,   0.0f
     };
+    unsigned potoVAO, potoVBO;
+    glGenVertexArrays(1, &potoVAO);
+    glGenBuffers(1, &potoVBO);
+    glBindVertexArray(potoVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, potoVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(plane), plane, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), nullptr);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5*sizeof(float),
+                          reinterpret_cast<void*>(3*sizeof(float)));
+    glEnableVertexAttribArray(1);
+    glBindVertexArray(0);
 
     MShader myShader("../learnOpenGL/shader/vertex.vert",
                      "../learnOpenGL/shader/fragment.frag");
     MShader lightShader("../learnOpenGL/shader/vertex.vert",
                      "../learnOpenGL/shader/lamp.frag");
-    MShader transparentShader("../learnOpenGL/shader/vertex.vert",
-                     "../learnOpenGL/shader/transparent.frag");
+    MShader photoShader("../learnOpenGL/shader/photo.vert",
+                     "../learnOpenGL/shader/photo.frag");
 
     Model3d mModel("../learnOpenGL/model/nanosuit/nanosuit.obj");
 
@@ -110,6 +150,8 @@ int main()
     glm::mat4 model(1.0f);
     //法线矩阵
     glm::mat3 normalMat(1.0f);
+    //单位矩阵
+    glm::mat4 identityMat(1.0f);
 
     glm::vec3 ambientStrength;//环境光量
     glm::vec3 diffuse;//漫反射量（保持本身颜色）
@@ -153,10 +195,9 @@ int main()
         cameraSpeed = 2.5f * deltaTime;
 
         //移动光源
-        //lightPos.x = static_cast<float>(sin(glfwGetTime()));
+        lightPos.x = static_cast<float>(sin(glfwGetTime()));
 
         //指定着色器程序对象
-
         projection = glm::mat4(1.0f);
         projection = glm::perspective(glm::radians(45.0f), SCR_WIDTH/SCR_HEIGHT, 0.1f, 100.f);
 
@@ -168,6 +209,28 @@ int main()
         //剔除背面（仅针对闭合形状）
         glEnable(GL_CULL_FACE);
         glFrontFace(GL_CCW);//定义顺时针的面为正向面
+
+        //使用帧缓冲
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        //使用稍亮的背景色
+        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        //绘制模型至帧缓冲
+        myShader.use();
+        myShader.setUniform3F("LuminousBody.position", lightPos);
+        myShader.setUniform3F("CameraPos", cameraPos);
+        myShader.setUniforMatrix4fv(glm::value_ptr(projection), "projection");
+        myShader.setUniforMatrix4fv(glm::value_ptr(identityMat), "view");
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, {0.0f, -2.0f, -3.0f});
+        model = glm::scale(model, glm::vec3(0.2f));
+        myShader.setUniforMatrix4fv(glm::value_ptr(model), "model");
+        myShader.setUniform1F("OneMaterial.shininess", 32.0f);
+        mModel.draw(myShader);
+        //返回默认帧缓冲
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         //绘制模型
         myShader.use();
@@ -197,6 +260,19 @@ int main()
 
         //取消背面剔除
         glDisable(GL_CULL_FACE);
+
+        //绘制照片平面
+        glBindVertexArray(potoVAO);
+        photoShader.use();
+        photoShader.setUniforMatrix4fv(glm::value_ptr(projection), "projection");
+        photoShader.setUniforMatrix4fv(glm::value_ptr(view), "view");
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, {-1.0f, 0.0f, -2.0f});
+        model = glm::rotate(model, glm::radians(30.0f), {0.0f, 1.0f, 0.0f});
+        photoShader.setUniforMatrix4fv(glm::value_ptr(model), "model");
+        glBindTexture(GL_TEXTURE_2D, texColorBuffer);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glBindVertexArray(0);
 
         //检查并调用事件，交换缓冲----
         //交换颜色缓冲（它是一个储存着GLFW窗口每一个像素颜色值的大缓冲），它在这一迭代中被用来绘制

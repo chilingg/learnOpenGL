@@ -29,7 +29,8 @@ DISTFILES += \
     shader/vertex.vert \
     shader/fragment.frag \
     shader/lamp.frag \
-    shader/transparent.frag
+    shader/photo.frag \
+    shader/photo.vert
 
 HEADERS += \
     mshader.h \
