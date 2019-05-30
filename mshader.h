@@ -11,7 +11,7 @@
 class MShader
 {
 public:
-    MShader(const GLchar* vertexPath, const GLchar* fragmentPath);
+    MShader(const GLchar* vertexPath, const GLchar* fragmentPath, bool notDrawTex = false);
     void use() const;//激活并使用
     void setUniform1F(const std::string &name, float value) const;
     void setUniform1I(const std::string &name, int value) const;
@@ -20,6 +20,7 @@ public:
     void setUniformMatrix4fv(float *ptr, const char *name) const;
     void setUniformMatrix3fv(float *ptr, const char *name, bool transpose = false) const;
 
+    const bool notDrawTex;
     unsigned int shaderProgramID;
 };
 

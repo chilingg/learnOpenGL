@@ -33,7 +33,8 @@ DISTFILES += \
     shader/photo.frag \
     shader/photo.vert \
     shader/skybox.vert \
-    shader/skybox.frag
+    shader/skybox.frag \
+    shader/reflection.frag
 
 HEADERS += \
     mshader.h \

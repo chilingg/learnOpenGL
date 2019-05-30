@@ -19,26 +19,29 @@ void Mesh::draw(const MShader &shader) const
 {
     unsigned int diffuseNr = 1;
     unsigned int specularNr = 1;
-    if(textures.size() == 0)
+    if(!shader.notDrawTex)
     {
-        shader.setUniform3F("OneMaterial.objColor", glm::vec3(0.5));
-    }
-    else {
-        for(unsigned int i = 0; i < textures.size(); i++)
+        if(textures.size() == 0)
         {
-            glActiveTexture(GL_TEXTURE0 + i); // 在绑定之前激活相应的纹理单元
-            // 获取纹理序号（diffuse_textureN 中的 N）
-            std::string number;
-            std::string name = textures[i].type;
-            if(name == "texture_diffuse")
-                number = std::to_string(diffuseNr++);
-            else if(name == "texture_specular")
-                number = std::to_string(specularNr++);
-
-            shader.setUniform1F(("OneMaterial." + name + number).c_str(), i);
-            glBindTexture(GL_TEXTURE_2D, textures[i].id);
+            shader.setUniform3F("OneMaterial.objColor", glm::vec3(0.5));
         }
-        shader.setUniform3F("OneMaterial.objColor", glm::vec3(0.0));
+        else {
+            for(unsigned int i = 0; i < textures.size(); i++)
+            {
+                glActiveTexture(GL_TEXTURE0 + i); // 在绑定之前激活相应的纹理单元
+                // 获取纹理序号（diffuse_textureN 中的 N）
+                std::string number;
+                std::string name = textures[i].type;
+                if(name == "texture_diffuse")
+                    number = std::to_string(diffuseNr++);
+                else if(name == "texture_specular")
+                    number = std::to_string(specularNr++);
+
+                shader.setUniform1F(("OneMaterial." + name + number).c_str(), i);
+                glBindTexture(GL_TEXTURE_2D, textures[i].id);
+            }
+            shader.setUniform3F("OneMaterial.objColor", glm::vec3(0.0));
+        }
     }
     glActiveTexture(GL_TEXTURE0);
 

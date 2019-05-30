@@ -74,7 +74,7 @@ int main()
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     //忽略不必要的Z轴片段
     glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
+    glDepthFunc(GL_LEQUAL);//小于或等于时通过
     //启用半透明混合
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);//设置源与目标的混个因子
@@ -155,6 +155,8 @@ int main()
                      "../learnOpenGL/shader/skybox.frag");
     MShader photoShader("../learnOpenGL/shader/photo.vert",
                      "../learnOpenGL/shader/photo.frag");
+    MShader reflection("../learnOpenGL/shader/vertex.vert",
+                     "../learnOpenGL/shader/reflection.frag", true);
 
     Model3d mModel("../learnOpenGL/model/nanosuit/nanosuit.obj");
 
@@ -173,10 +175,10 @@ int main()
     glm::vec3 diffuse;//漫反射量（保持本身颜色）
     myShader.use();
     //平行光
-    glm::vec3 lightStrength(0.3f, 0.3f, 0.3f);//高光（光源）量
+    glm::vec3 lightStrength(0.6f, 0.6f, 0.6f);//高光（光源）量
     ambientStrength = lightStrength * 0.3f;//环境光量
     diffuse = lightStrength - ambientStrength;//漫反射量（保持本身颜色）
-    glm::vec3 parallelDir(-0.2f, -1.0f, -0.3f);//平行光源方向
+    glm::vec3 parallelDir(-0.2f, -1.0f, 0.3f);//平行光源方向
     myShader.setUniform3F("SunLight.direction", parallelDir);
     myShader.setUniform3F("SunLight.ambient", ambientStrength);
     myShader.setUniform3F("SunLight.diffuse",  diffuse);
@@ -258,6 +260,19 @@ int main()
         model = glm::scale(model, glm::vec3(0.2f));
         myShader.setUniformMatrix4fv(glm::value_ptr(model), "model");
         myShader.setUniform1F("OneMaterial.shininess", 32.0f);
+        mModel.draw(myShader);
+
+        //绘制反射模型
+        reflection.use();
+        //std::cout << cameraPos.x << cameraPos.y << cameraPos.z << std::endl;
+        reflection.setUniform3F("CameraPos", cameraPos);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+        reflection.setUniformMatrix4fv(glm::value_ptr(projection), "projection");
+        reflection.setUniformMatrix4fv(glm::value_ptr(view), "view");
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, {2.0f, -2.0f, -3.0f});
+        model = glm::scale(model, glm::vec3(0.2f));
+        reflection.setUniformMatrix4fv(glm::value_ptr(model), "model");
         mModel.draw(myShader);
 
         //绘制灯
