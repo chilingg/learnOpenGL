@@ -1,5 +1,5 @@
 #include "model3d.h"
-#include "stb_image_implementation.h"
+#include "stb_image.h"
 
 Model3d::~Model3d()
 {

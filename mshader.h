@@ -17,7 +17,7 @@ public:
     void setUniform1I(const std::string &name, int value) const;
     void setUniform3F(const std::string &name, float value1, float value2, float value3) const;
     void setUniform3F(const std::string &name, glm::vec3 vec) const;
-    void setUniforMatrix4fv(float *ptr, const char *name) const;
+    void setUniformMatrix4fv(float *ptr, const char *name) const;
     void setUniformMatrix3fv(float *ptr, const char *name, bool transpose = false) const;
 
     unsigned int shaderProgramID;
@@ -60,7 +60,7 @@ inline void MShader::setUniform3F(const std::string &name, glm::vec3 vec) const
     setUniform3F(name, vec.x, vec.y, vec.z);
 }
 
-inline void MShader::setUniforMatrix4fv(float *ptr, const char *name) const
+inline void MShader::setUniformMatrix4fv(float *ptr, const char *name) const
 {
     int loc = glGetUniformLocation(shaderProgramID, name);
     if(loc != -1)

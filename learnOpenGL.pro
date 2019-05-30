@@ -10,7 +10,8 @@ SOURCES += \
     mshader.cpp \
     mmatrix.cpp \
     mesh.cpp \
-    model3d.cpp
+    model3d.cpp \
+    stb_image_implementatio.cpp
 
 win32{
 LIBS += -L$$PWD/../bin/libs/ -lglfw3 \
@@ -30,7 +31,9 @@ DISTFILES += \
     shader/fragment.frag \
     shader/lamp.frag \
     shader/photo.frag \
-    shader/photo.vert
+    shader/photo.vert \
+    shader/skybox.vert \
+    shader/skybox.frag
 
 HEADERS += \
     mshader.h \
@@ -38,8 +41,7 @@ HEADERS += \
     mmatrix.h \
     mesh.h \
     model3d.h \
-    stb_image.h \
-    stb_image_implementation.h
+    stb_image.h
 
 RESOURCES +=
 

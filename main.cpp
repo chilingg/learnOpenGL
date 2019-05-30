@@ -6,6 +6,7 @@
 #include <fstream>
 #include "mshader.h"
 #include "model3d.h"
+#include "stb_image.h"
 //#include "mmatrix.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -32,7 +33,8 @@ void framebuffer_size_callback(GLFWwindow *, int width, int height);
 void processInput(GLFWwindow *window);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 
-int createCube(unsigned *lightVAO, unsigned *lightVBO);
+int createCube(unsigned *VAO, unsigned *VBO);
+unsigned loadCubmap(std::vector<std::string> faces);
 
 int main()
 {
@@ -72,6 +74,7 @@ int main()
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     //忽略不必要的Z轴片段
     glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
     //启用半透明混合
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);//设置源与目标的混个因子
@@ -79,8 +82,7 @@ int main()
 
     //创建点光源
     unsigned lightVAO, lightVBO;
-    int pointeNumber;
-    pointeNumber = createCube(&lightVAO, &lightVBO);
+    int pointeNumber = createCube(&lightVAO, &lightVBO);
 
     //渲染到纹理
     unsigned framebuffer;
@@ -107,9 +109,8 @@ int main()
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
     //检查帧缓冲是否完整
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+        std::cerr << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
     //平面
     float plane[] = {
         // positions
@@ -120,11 +121,11 @@ int main()
         -0.5f,  0.5f,  0.0f,    0.0f,   1.0f,
         -0.5f, -0.25f,  0.0f,    0.0f,   0.0f
     };
-    unsigned potoVAO, potoVBO;
-    glGenVertexArrays(1, &potoVAO);
-    glGenBuffers(1, &potoVBO);
-    glBindVertexArray(potoVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, potoVBO);
+    unsigned photoVAO, photoVBO;
+    glGenVertexArrays(1, &photoVAO);
+    glGenBuffers(1, &photoVBO);
+    glBindVertexArray(photoVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, photoVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(plane), plane, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), nullptr);
     glEnableVertexAttribArray(0);
@@ -133,10 +134,25 @@ int main()
     glEnableVertexAttribArray(1);
     glBindVertexArray(0);
 
+    std::vector<std::string> faces
+    {
+        "../learnOpenGL/texture/skybox/right.jpg",
+        "../learnOpenGL/texture/skybox/left.jpg",
+        "../learnOpenGL/texture/skybox/top.jpg",
+        "../learnOpenGL/texture/skybox/bottom.jpg",
+        "../learnOpenGL/texture/skybox/front.jpg",
+        "../learnOpenGL/texture/skybox/back.jpg"
+    };
+    unsigned cubemapTexture = loadCubmap(faces);
+    unsigned skyboxVAO, skyboxVBO;
+    int skyPNumber = createCube(&skyboxVAO, &skyboxVBO);
+
     MShader myShader("../learnOpenGL/shader/vertex.vert",
                      "../learnOpenGL/shader/fragment.frag");
     MShader lightShader("../learnOpenGL/shader/vertex.vert",
                      "../learnOpenGL/shader/lamp.frag");
+    MShader skyboxShader("../learnOpenGL/shader/skybox.vert",
+                     "../learnOpenGL/shader/skybox.frag");
     MShader photoShader("../learnOpenGL/shader/photo.vert",
                      "../learnOpenGL/shader/photo.frag");
 
@@ -197,7 +213,6 @@ int main()
         //移动光源
         lightPos.x = static_cast<float>(sin(glfwGetTime()));
 
-        //指定着色器程序对象
         projection = glm::mat4(1.0f);
         projection = glm::perspective(glm::radians(45.0f), SCR_WIDTH/SCR_HEIGHT, 0.1f, 100.f);
 
@@ -219,12 +234,12 @@ int main()
         myShader.use();
         myShader.setUniform3F("LuminousBody.position", lightPos);
         myShader.setUniform3F("CameraPos", cameraPos);
-        myShader.setUniforMatrix4fv(glm::value_ptr(projection), "projection");
-        myShader.setUniforMatrix4fv(glm::value_ptr(identityMat), "view");
+        myShader.setUniformMatrix4fv(glm::value_ptr(projection), "projection");
+        myShader.setUniformMatrix4fv(glm::value_ptr(identityMat), "view");
         model = glm::mat4(1.0f);
         model = glm::translate(model, {0.0f, -2.0f, -3.0f});
         model = glm::scale(model, glm::vec3(0.2f));
-        myShader.setUniforMatrix4fv(glm::value_ptr(model), "model");
+        myShader.setUniformMatrix4fv(glm::value_ptr(model), "model");
         myShader.setUniform1F("OneMaterial.shininess", 32.0f);
         mModel.draw(myShader);
         //返回默认帧缓冲
@@ -236,43 +251,57 @@ int main()
         myShader.use();
         myShader.setUniform3F("LuminousBody.position", lightPos);
         myShader.setUniform3F("CameraPos", cameraPos);
-        myShader.setUniforMatrix4fv(glm::value_ptr(projection), "projection");
-        myShader.setUniforMatrix4fv(glm::value_ptr(view), "view");
+        myShader.setUniformMatrix4fv(glm::value_ptr(projection), "projection");
+        myShader.setUniformMatrix4fv(glm::value_ptr(view), "view");
         model = glm::mat4(1.0f);
         model = glm::translate(model, {0.0f, -2.0f, -3.0f});
         model = glm::scale(model, glm::vec3(0.2f));
-        myShader.setUniforMatrix4fv(glm::value_ptr(model), "model");
+        myShader.setUniformMatrix4fv(glm::value_ptr(model), "model");
         myShader.setUniform1F("OneMaterial.shininess", 32.0f);
         mModel.draw(myShader);
 
         //绘制灯
+        glFrontFace(GL_CW);//定义顺时针的面为正向面
         lightShader.use();
         lightShader.setUniform3F("lightColor", 0.3f+pointlightStrength);
-        lightShader.setUniforMatrix4fv(glm::value_ptr(projection), "projection");
-        lightShader.setUniforMatrix4fv(glm::value_ptr(view), "view");
+        lightShader.setUniformMatrix4fv(glm::value_ptr(projection), "projection");
+        lightShader.setUniformMatrix4fv(glm::value_ptr(view), "view");
         model = glm::mat4(1.0f);
         model = glm::translate(model, lightPos);
-        model = glm::scale(model, glm::vec3(0.2f));
-        lightShader.setUniforMatrix4fv(glm::value_ptr(model), "model");
+        model = glm::scale(model, glm::vec3(0.05f));
+        lightShader.setUniformMatrix4fv(glm::value_ptr(model), "model");
         glBindVertexArray(lightVAO);
         glDrawArrays(GL_TRIANGLES, 0, pointeNumber);//VBO内存储顶点顺序绘制
         glBindVertexArray(0);
+        glFrontFace(GL_CCW);//定义顺时针的面为正向面
 
         //取消背面剔除
         glDisable(GL_CULL_FACE);
-
         //绘制照片平面
-        glBindVertexArray(potoVAO);
+        glBindVertexArray(photoVAO);
         photoShader.use();
-        photoShader.setUniforMatrix4fv(glm::value_ptr(projection), "projection");
-        photoShader.setUniforMatrix4fv(glm::value_ptr(view), "view");
+        photoShader.setUniformMatrix4fv(glm::value_ptr(projection), "projection");
+        photoShader.setUniformMatrix4fv(glm::value_ptr(view), "view");
         model = glm::mat4(1.0f);
         model = glm::translate(model, {-1.0f, 0.0f, -2.0f});
         model = glm::rotate(model, glm::radians(30.0f), {0.0f, 1.0f, 0.0f});
-        photoShader.setUniforMatrix4fv(glm::value_ptr(model), "model");
+        photoShader.setUniformMatrix4fv(glm::value_ptr(model), "model");
         glBindTexture(GL_TEXTURE_2D, texColorBuffer);
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
+        glEnable(GL_CULL_FACE);
+
+        //绘制天空盒
+        glDepthMask(GL_FALSE);
+        skyboxShader.use();
+        glm::mat3 skybox(view);
+        skyboxShader.setUniformMatrix4fv(glm::value_ptr(projection), "projection");
+        skyboxShader.setUniformMatrix3fv(glm::value_ptr(skybox), "view");
+        glBindVertexArray(skyboxVAO);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+        glDrawArrays(GL_TRIANGLES, 0, skyPNumber);
+        glBindVertexArray(0);
+        glDepthMask(GL_TRUE);
 
         //检查并调用事件，交换缓冲----
         //交换颜色缓冲（它是一个储存着GLFW窗口每一个像素颜色值的大缓冲），它在这一迭代中被用来绘制
@@ -284,6 +313,8 @@ int main()
     //正确释放/删除之前分配的所有资源
     glDeleteBuffers(1, &lightVBO);
     glDeleteBuffers(1, &lightVAO);
+    glDeleteBuffers(1, &photoVBO);
+    glDeleteBuffers(1, &photoVAO);
     glfwTerminate();
 
     return 0;
@@ -349,59 +380,90 @@ void mouse_callback(GLFWwindow*, double xpos, double ypos)
     oldY = newY;
 }
 
-int createCube(unsigned *lightVAO, unsigned *lightVBO)
+unsigned loadCubmap(std::vector<std::string> faces)
+{
+    unsigned textureID;
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+    int width, height, nrChannels;
+    for(unsigned i = 0; i < faces.size() && i < 6; ++i)
+    {
+        unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+        if(data)
+        {
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, 0, GL_RGB, width, height, 0,
+                         GL_RGB, GL_UNSIGNED_BYTE, data);
+            stbi_image_free(data);
+        }
+        else {
+            std::cerr << "Cubemap texture failed to load at path: " << faces[i] << std::endl;
+            stbi_image_free(data);
+        }
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    return textureID;
+}
+
+int createCube(unsigned *VAO, unsigned *VBO)
 {
     //以标准化设备坐标指定多个顶点
     float vertices[] = {
         // positions
         // Back face
-        -0.5f, -0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f,
-        -0.5f,  0.5f, -0.5f,
-        // Front face
-        -0.5f, -0.5f,  0.5f,
-         0.5f, -0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f,
-        -0.5f, -0.5f,  0.5f,
-        // Left face
-        -0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f,
-        -0.5f, -0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f,
-        // Right face
-         0.5f,  0.5f,  0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f,  0.5f,  0.5f,
-         0.5f, -0.5f,  0.5f,
-        // Bottom face
-        -0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f,  0.5f,
-         0.5f, -0.5f,  0.5f,
-        -0.5f, -0.5f,  0.5f,
-        -0.5f, -0.5f, -0.5f,
-        // Top face
-        -0.5f,  0.5f, -0.5f,
-         0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f, -0.5f,
-         0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f, -0.5f,
-        -0.5f,  0.5f,  0.5f,
+        // positions
+        -1.0f,  1.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+
+        -1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+
+        -1.0f, -1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+
+        -1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f, -1.0f,
+
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+         1.0f, -1.0f,  1.0f
     };
     //管理光源的VAO
-    glGenVertexArrays(1, lightVAO);
-    glGenBuffers(1, lightVBO);
-    glBindVertexArray(*lightVAO);//记录以下操作
-    glBindBuffer(GL_ARRAY_BUFFER, *lightVBO);
+    glGenVertexArrays(1, VAO);
+    glGenBuffers(1, VBO);
+    glBindVertexArray(*VAO);//记录以下操作
+    glBindBuffer(GL_ARRAY_BUFFER, *VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
     //设置灯的顶点属性
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), nullptr);//位置属性
