@@ -11,7 +11,7 @@
 class MShader
 {
 public:
-    MShader(const GLchar* vertexPath, const GLchar* fragmentPath, bool notDrawTex = false);
+    MShader(const GLchar* vertexPath, const GLchar* fragmentPath);
     void use() const;//激活并使用
     void setUniform1F(const std::string &name, float value) const;
     void setUniform1I(const std::string &name, int value) const;

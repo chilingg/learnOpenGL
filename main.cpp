@@ -156,7 +156,7 @@ int main()
     MShader photoShader("../learnOpenGL/shader/photo.vert",
                      "../learnOpenGL/shader/photo.frag");
     MShader reflection("../learnOpenGL/shader/vertex.vert",
-                     "../learnOpenGL/shader/reflection.frag", true);
+                     "../learnOpenGL/shader/reflection.frag");
 
     Model3d mModel("../learnOpenGL/model/nanosuit/nanosuit.obj");
 
