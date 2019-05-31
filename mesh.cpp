@@ -15,11 +15,11 @@ Mesh::~Mesh()
 {
 }
 
-void Mesh::draw(const MShader &shader) const
+void Mesh::draw(const MShader &shader, bool notLoadTex) const
 {
     unsigned int diffuseNr = 1;
     unsigned int specularNr = 1;
-    if(!shader.notDrawTex)
+    if(!notLoadTex)
     {
         if(textures.size() == 0)
         {

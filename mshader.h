@@ -20,7 +20,6 @@ public:
     void setUniformMatrix4fv(float *ptr, const char *name) const;
     void setUniformMatrix3fv(float *ptr, const char *name, bool transpose = false) const;
 
-    const bool notDrawTex;
     unsigned int shaderProgramID;
 };
 

@@ -273,7 +273,7 @@ int main()
         model = glm::translate(model, {2.0f, -2.0f, -3.0f});
         model = glm::scale(model, glm::vec3(0.2f));
         reflection.setUniformMatrix4fv(glm::value_ptr(model), "model");
-        mModel.draw(myShader);
+        mModel.draw(myShader, true);
 
         //绘制灯
         glFrontFace(GL_CW);//定义顺时针的面为正向面

@@ -1,8 +1,7 @@
 #include "mshader.h"
 #include <fstream>
 
-MShader::MShader(const GLchar *vertexPath, const GLchar *fragmentPath, bool notDrawTex):
-    notDrawTex(notDrawTex)
+MShader::MShader(const GLchar *vertexPath, const GLchar *fragmentPath, bool notDrawTex)
 {
     std::string vertexCode;
     std::string fragmentCode;

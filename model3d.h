@@ -24,7 +24,7 @@ class Model3d
         /*  函数   */
         Model3d(const char *path) { loadModel(path); }
         ~Model3d();
-        void draw(MShader shader);
+        void draw(MShader shader, bool notLoadTex = false);
 
     private:
         /*  模型数据  */
@@ -39,10 +39,10 @@ class Model3d
                                                         std::string typeName);
 };
 
-inline void Model3d::draw(MShader shader)
+inline void Model3d::draw(MShader shader, bool notLoadTex)
 {
     for(unsigned int i = 0; i < meshes.size(); i++)
-        meshes[i].draw(shader);
+        meshes[i].draw(shader, notLoadTex);
 }
 
 #endif // MODEL3D_H
