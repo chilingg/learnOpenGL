@@ -23,7 +23,8 @@ DEPENDPATH += $$PWD/../bin/include
 
 unix{
 unix:!macx: LIBS += -lglfw \
-    -ldl #显式加载动态库的动态函数库
+    -ldl \#显式加载动态库的动态函数库
+    -lassimp
 }
 
 DISTFILES += \

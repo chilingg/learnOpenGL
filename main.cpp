@@ -158,7 +158,7 @@ int main()
     MShader reflection("../learnOpenGL/shader/vertex.vert",
                      "../learnOpenGL/shader/reflection.frag");
 
-    Model3d mModel("../learnOpenGL/model/nanosuit/nanosuit.obj");
+    Model3d mModel("../learnOpenGL/model/tank/tank.blend");
 
     //视图矩阵
     glm::mat4 view(1.0f);
@@ -263,6 +263,7 @@ int main()
         mModel.draw(myShader);
 
         //绘制反射模型
+        /*
         reflection.use();
         //std::cout << cameraPos.x << cameraPos.y << cameraPos.z << std::endl;
         reflection.setUniform3F("CameraPos", cameraPos);
@@ -273,7 +274,7 @@ int main()
         model = glm::translate(model, {2.0f, -2.0f, -3.0f});
         model = glm::scale(model, glm::vec3(0.2f));
         reflection.setUniformMatrix4fv(glm::value_ptr(model), "model");
-        mModel.draw(myShader, true);
+        mModel.draw(myShader, true);*/
 
         //绘制灯
         glFrontFace(GL_CW);//定义顺时针的面为正向面
