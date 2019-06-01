@@ -46,7 +46,7 @@ vec3 calculatePointLight(PointLight light, vec3 normal, vec3 viewDir);
 
 void main(void)
 {
-    vec3 outputColor;
+    vec3 outputColor = vec3(0.0);
     vec3 viewDir = normalize(CameraPos - FragPos);//顶点指向摄影机
     vec3 normal = normalize(Normal);//经由法线矩阵变换后，标准化法向量
     if(OneMaterial.objColor == vec3(0.0))
