@@ -297,6 +297,8 @@ int main()
         reflection.use();
         //std::cout << cameraPos.x << cameraPos.y << cameraPos.z << std::endl;
         reflection.setUniform3F("CameraPos", cameraPos);
+        reflection.setUniformMatrix4fv(glm::value_ptr(projection), "projection");
+        reflection.setUniformMatrix4fv(glm::value_ptr(view), "view");
         glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
         model = glm::mat4(1.0f);
         model = glm::translate(model, {2.0f, -2.0f, -3.0f});
@@ -308,6 +310,8 @@ int main()
         glFrontFace(GL_CW);//定义顺时针的面为正向面
         lightShader.use();
         lightShader.setUniform3F("lightColor", 0.3f+pointlightStrength);
+        lightShader.setUniformMatrix4fv(glm::value_ptr(projection), "projection");
+        lightShader.setUniformMatrix4fv(glm::value_ptr(view), "view");
         model = glm::mat4(1.0f);
         model = glm::translate(model, lightPos);
         model = glm::scale(model, glm::vec3(0.05f));
