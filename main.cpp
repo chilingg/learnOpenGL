@@ -274,7 +274,7 @@ int main()
         model = glm::scale(model, glm::vec3(0.2f));
         myShader.setUniformMatrix4fv(glm::value_ptr(model), "model");
         myShader.setUniform1F("OneMaterial.shininess", 32.0f);
-        mModel.draw(myShader);
+        mModel.draw(myShader, GL_TRIANGLES);
         //返回默认帧缓冲
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -291,7 +291,7 @@ int main()
         model = glm::scale(model, glm::vec3(0.2f));
         myShader.setUniformMatrix4fv(glm::value_ptr(model), "model");
         myShader.setUniform1F("OneMaterial.shininess", 32.0f);
-        mModel.draw(myShader);
+        mModel.draw(myShader, GL_TRIANGLES);
 
         //绘制反射模型
         reflection.use();
@@ -304,7 +304,7 @@ int main()
         model = glm::translate(model, {2.0f, -2.0f, -3.0f});
         model = glm::scale(model, glm::vec3(0.2f));
         reflection.setUniformMatrix4fv(glm::value_ptr(model), "model");
-        mModel.draw(myShader, true);
+        mModel.draw(myShader, GL_TRIANGLES, true);
 
         //绘制灯
         glFrontFace(GL_CW);//定义顺时针的面为正向面

@@ -25,7 +25,7 @@ public:
          const std::vector<unsigned> &indices,
          const std::vector<Texture> &textrue);
     ~Mesh();
-    void draw(const MShader &shader, bool notLoadTex = false) const;
+    void draw(const MShader &shader, int promitive, bool notLoadTex = false) const;
     void deleteBuffer() const;
 
     //网格数据
