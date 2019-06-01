@@ -1,7 +1,7 @@
 #include "model3d.h"
 #include "stb_image.h"
 
-Model3d::~Model3d()
+void Model3d::deleteBuffer()
 {
     for(auto mesh : meshes)
         mesh.deleteBuffer();

@@ -327,10 +327,11 @@ int main()
     }
 
     //正确释放/删除之前分配的所有资源
+    mModel.deleteBuffer();
     glDeleteBuffers(1, &lightVBO);
-    glDeleteBuffers(1, &lightVAO);
+    glDeleteVertexArrays(1, &lightVAO);
     glDeleteBuffers(1, &photoVBO);
-    glDeleteBuffers(1, &photoVAO);
+    glDeleteVertexArrays(1, &photoVAO);
     glfwTerminate();
 
     return 0;
