@@ -20,17 +20,17 @@ public:
     void setUniformMatrix4fv(float *ptr, const char *name) const;
     void setUniformMatrix3fv(float *ptr, const char *name, bool transpose = false) const;
 
-    unsigned int shaderProgramID;
+    unsigned int ID;
 };
 
 inline void MShader::use() const
 {
-    glUseProgram(shaderProgramID);
+    glUseProgram(ID);
 }
 
 inline void MShader::setUniform1F(const std::string &name, float value) const
 {
-    int loc = glGetUniformLocation(shaderProgramID, name.c_str());
+    int loc = glGetUniformLocation(ID, name.c_str());
     if(loc != -1)
         glUniform1f(loc, value);
     else
@@ -39,7 +39,7 @@ inline void MShader::setUniform1F(const std::string &name, float value) const
 
 inline void MShader::setUniform1I(const std::string &name, int value) const
 {
-    int loc = glGetUniformLocation(shaderProgramID, name.c_str());
+    int loc = glGetUniformLocation(ID, name.c_str());
     if(loc != -1)
         glUniform1i(loc, value);
     else
@@ -48,7 +48,7 @@ inline void MShader::setUniform1I(const std::string &name, int value) const
 
 inline void MShader::setUniform3F(const std::string &name, float value1, float value2, float value3) const
 {
-    int loc = glGetUniformLocation(shaderProgramID, name.c_str());
+    int loc = glGetUniformLocation(ID, name.c_str());
     if(loc != -1)
         glUniform3f(loc, value1, value2, value3);
     else
@@ -62,7 +62,7 @@ inline void MShader::setUniform3F(const std::string &name, glm::vec3 vec) const
 
 inline void MShader::setUniformMatrix4fv(float *ptr, const char *name) const
 {
-    int loc = glGetUniformLocation(shaderProgramID, name);
+    int loc = glGetUniformLocation(ID, name);
     if(loc != -1)
         glUniformMatrix4fv(loc, 1, GL_FALSE, ptr);
     else
@@ -71,7 +71,7 @@ inline void MShader::setUniformMatrix4fv(float *ptr, const char *name) const
 
 inline void MShader::setUniformMatrix3fv(float *ptr, const char *name, bool transpose) const
 {
-    int loc = glGetUniformLocation(shaderProgramID, name);
+    int loc = glGetUniformLocation(ID, name);
     if(loc != -1)
     {
         if(transpose)

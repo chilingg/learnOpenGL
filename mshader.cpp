@@ -60,15 +60,15 @@ MShader::MShader(const GLchar *vertexPath, const GLchar *fragmentPath)
     }
 
     //创建着色器程序，并连接顶点&片段着色器
-    shaderProgramID = glCreateProgram();
-    glAttachShader(shaderProgramID, vertexShader);
-    glAttachShader(shaderProgramID, fragmentShader);
-    glLinkProgram(shaderProgramID);
+    ID = glCreateProgram();
+    glAttachShader(ID, vertexShader);
+    glAttachShader(ID, fragmentShader);
+    glLinkProgram(ID);
     // 打印编译错误（如果有的话）
-    glGetProgramiv(shaderProgramID, GL_LINK_STATUS, &success);
+    glGetProgramiv(ID, GL_LINK_STATUS, &success);
     if(!success)
     {
-        glGetProgramInfoLog(shaderProgramID, 512, nullptr, infoLog);
+        glGetProgramInfoLog(ID, 512, nullptr, infoLog);
         std::cerr << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
 
     }

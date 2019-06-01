@@ -149,16 +149,37 @@ int main()
 
     MShader myShader("../learnOpenGL/shader/vertex.vert",
                      "../learnOpenGL/shader/fragment.frag");
+    unsigned uBlockIndexMy = glad_glGetUniformBlockIndex(myShader.ID, "Matrices");
+    glUniformBlockBinding(myShader.ID, uBlockIndexMy, 0);
+
     MShader lightShader("../learnOpenGL/shader/vertex.vert",
                      "../learnOpenGL/shader/lamp.frag");
+    unsigned uBlockIndexLight = glad_glGetUniformBlockIndex(lightShader.ID, "Matrices");
+    glUniformBlockBinding(lightShader.ID, uBlockIndexLight, 0);
+
     MShader skyboxShader("../learnOpenGL/shader/skybox.vert",
                      "../learnOpenGL/shader/skybox.frag");
+    unsigned uBlockIndexSky = glad_glGetUniformBlockIndex(skyboxShader.ID, "Matrices");
+    glUniformBlockBinding(skyboxShader.ID, uBlockIndexSky, 0);
+
     MShader photoShader("../learnOpenGL/shader/photo.vert",
                      "../learnOpenGL/shader/photo.frag");
+    unsigned uBlockIndexPhoto = glad_glGetUniformBlockIndex(photoShader.ID, "Matrices");
+    glUniformBlockBinding(photoShader.ID, uBlockIndexPhoto, 0);
+
     MShader reflection("../learnOpenGL/shader/vertex.vert",
                      "../learnOpenGL/shader/reflection.frag");
+    unsigned uBlockIndexRef = glad_glGetUniformBlockIndex(reflection.ID, "Matrices");
+    glUniformBlockBinding(reflection.ID, uBlockIndexRef, 0);
 
-    Model3d mModel("../learnOpenGL/model/nanosuit/nanosuit.blend");
+    //创建Uniform缓冲对象
+    unsigned uboMatrices;
+    glGenBuffers(1, &uboMatrices);
+    glBindBuffer(GL_UNIFORM_BUFFER, uboMatrices);
+    glBufferData(GL_UNIFORM_BUFFER, 2*sizeof(glm::mat4), nullptr, GL_STATIC_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    //绑定到绑定点0
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, uboMatrices);
 
     //视图矩阵
     glm::mat4 view(1.0f);
@@ -196,6 +217,9 @@ int main()
     myShader.setUniform3F("LuminousBody.specular", pointlightStrength);
     myShader.setUniform3F("LuminousBody.position", lightPos);
 
+    //加载模型
+    Model3d mModel("../learnOpenGL/model/nanosuit/nanosuit.blend");
+
     //渲染循环
     while(!glfwWindowShouldClose(window))
     {
@@ -222,6 +246,13 @@ int main()
         view = glm::rotate(view, rotateView.x, {1.0f, 0.0f, 0.0f});
         view = glm::rotate(view, rotateView.y, {0.0f, 1.0f, 0.0f});
         view = glm::translate(view, -cameraPos);
+
+        //填充Uniform缓冲
+        glBindBuffer(GL_UNIFORM_BUFFER, uboMatrices);
+        //sub->偏移量和大小
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(projection));
+        glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(view));
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
         //剔除背面（仅针对闭合形状）
         glEnable(GL_CULL_FACE);
@@ -263,25 +294,20 @@ int main()
         mModel.draw(myShader);
 
         //绘制反射模型
-        /*
         reflection.use();
         //std::cout << cameraPos.x << cameraPos.y << cameraPos.z << std::endl;
         reflection.setUniform3F("CameraPos", cameraPos);
         glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-        reflection.setUniformMatrix4fv(glm::value_ptr(projection), "projection");
-        reflection.setUniformMatrix4fv(glm::value_ptr(view), "view");
         model = glm::mat4(1.0f);
         model = glm::translate(model, {2.0f, -2.0f, -3.0f});
         model = glm::scale(model, glm::vec3(0.2f));
         reflection.setUniformMatrix4fv(glm::value_ptr(model), "model");
-        mModel.draw(myShader, true);*/
+        mModel.draw(myShader, true);
 
         //绘制灯
         glFrontFace(GL_CW);//定义顺时针的面为正向面
         lightShader.use();
         lightShader.setUniform3F("lightColor", 0.3f+pointlightStrength);
-        lightShader.setUniformMatrix4fv(glm::value_ptr(projection), "projection");
-        lightShader.setUniformMatrix4fv(glm::value_ptr(view), "view");
         model = glm::mat4(1.0f);
         model = glm::translate(model, lightPos);
         model = glm::scale(model, glm::vec3(0.05f));
@@ -296,8 +322,6 @@ int main()
         //绘制照片平面
         glBindVertexArray(photoVAO);
         photoShader.use();
-        photoShader.setUniformMatrix4fv(glm::value_ptr(projection), "projection");
-        photoShader.setUniformMatrix4fv(glm::value_ptr(view), "view");
         model = glm::mat4(1.0f);
         model = glm::translate(model, {-1.0f, 0.0f, -2.0f});
         model = glm::rotate(model, glm::radians(30.0f), {0.0f, 1.0f, 0.0f});
@@ -311,8 +335,6 @@ int main()
         glDepthMask(GL_FALSE);
         skyboxShader.use();
         glm::mat3 skybox(view);
-        skyboxShader.setUniformMatrix4fv(glm::value_ptr(projection), "projection");
-        skyboxShader.setUniformMatrix3fv(glm::value_ptr(skybox), "view");
         glBindVertexArray(skyboxVAO);
         glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
         glDrawArrays(GL_TRIANGLES, 0, skyPNumber);
@@ -332,6 +354,8 @@ int main()
     glDeleteVertexArrays(1, &lightVAO);
     glDeleteBuffers(1, &photoVBO);
     glDeleteVertexArrays(1, &photoVAO);
+    glDeleteBuffers(1, &skyboxVBO);
+    glDeleteVertexArrays(1, &skyboxVAO);
     glfwTerminate();
 
     return 0;
