@@ -158,7 +158,7 @@ int main()
     MShader reflection("../learnOpenGL/shader/vertex.vert",
                      "../learnOpenGL/shader/reflection.frag");
 
-    Model3d mModel("../learnOpenGL/model/tank/tank.blend");
+    Model3d mModel("../learnOpenGL/model/nanosuit/nanosuit.blend");
 
     //视图矩阵
     glm::mat4 view(1.0f);
