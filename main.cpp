@@ -148,7 +148,8 @@ int main()
     int skyPNumber = createCube(&skyboxVAO, &skyboxVBO);
 
     MShader myShader("../learnOpenGL/shader/vertex.vert",
-                     "../learnOpenGL/shader/fragment.frag");
+                     "../learnOpenGL/shader/fragment.frag",
+                     "../learnOpenGL/shader/geometry.geomt");
     unsigned uBlockIndexMy = glad_glGetUniformBlockIndex(myShader.ID, "Matrices");
     glUniformBlockBinding(myShader.ID, uBlockIndexMy, 0);
 

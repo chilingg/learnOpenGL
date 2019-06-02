@@ -28,6 +28,7 @@ unix:!macx: LIBS += -lglfw \
 }
 
 DISTFILES += \
+    shader/geometry.geomt \
     shader/vertex.vert \
     shader/fragment.frag \
     shader/lamp.frag \

@@ -11,7 +11,7 @@
 class MShader
 {
 public:
-    MShader(const GLchar* vertexPath, const GLchar* fragmentPath);
+    MShader(const GLchar* vertexPath, const GLchar* fragmentPath, const GLchar *geometryPath = nullptr);
     void use() const;//激活并使用
     void setUniform1F(const std::string &name, float value) const;
     void setUniform1I(const std::string &name, int value) const;
@@ -21,6 +21,8 @@ public:
     void setUniformMatrix3fv(float *ptr, const char *name, bool transpose = false) const;
 
     unsigned int ID;
+private:
+    std::string openShaderFile(const GLchar *path);
 };
 
 inline void MShader::use() const
