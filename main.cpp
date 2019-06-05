@@ -172,7 +172,7 @@ int main()
                      "../learnOpenGL/shader/fragment.frag",
                      "../learnOpenGL/shader/geometry.geom");
     unsigned uBlockIndexGeomtM = glGetUniformBlockIndex(geomtShader.ID, "Matrices");
-    glUniformBlockBinding(myShader.ID, uBlockIndexGeomtM, 0);
+    glUniformBlockBinding(geomtShader.ID, uBlockIndexGeomtM, 0);
     unsigned uBlockIndexGeomtL = glGetUniformBlockIndex(geomtShader.ID, "Lights");
     glUniformBlockBinding(geomtShader.ID, uBlockIndexGeomtL, 1);
 
