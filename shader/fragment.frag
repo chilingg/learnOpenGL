@@ -1,5 +1,6 @@
 #version 330 core
 out vec4 FragColor;
+
 in vec3 Normal;
 in vec3 FragPos;
 in vec2 TexCoord;
@@ -13,6 +14,7 @@ struct Material
     vec3 objColor;
     float shininess;
 };
+
 struct DirLight
 {
     vec3 direction;
@@ -24,19 +26,23 @@ struct PointLight
 {
     vec3 position;
 
-    float constant;
-    float linear;
-    float quadratic;
-
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
+
+    float constant;
+    float linear;
+    float quadratic;
+};
+
+layout (std140) uniform Lights
+{
+    uniform DirLight SunLight;
+    uniform PointLight LuminousBody;
 };
 
 uniform vec3 CameraPos;
 uniform Material OneMaterial;
-uniform DirLight SunLight;
-uniform PointLight LuminousBody;
 
 vec3 diffuseColor;
 vec3 specularColor;

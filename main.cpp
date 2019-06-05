@@ -148,30 +148,33 @@ int main()
     int skyPNumber = createCube(&skyboxVAO, &skyboxVBO);
 
     MShader myShader("../learnOpenGL/shader/vertex.vert",
-                     "../learnOpenGL/shader/fragment.frag",
-                     "../learnOpenGL/shader/geometry.geomt");
-    unsigned uBlockIndexMy = glad_glGetUniformBlockIndex(myShader.ID, "Matrices");
-    glUniformBlockBinding(myShader.ID, uBlockIndexMy, 0);
+                     "../learnOpenGL/shader/fragment.frag");
+    unsigned uBlockIndexMy = glGetUniformBlockIndex(myShader.ID, "Lights");
+    glUniformBlockBinding(myShader.ID, uBlockIndexMy, 1);
 
     MShader lightShader("../learnOpenGL/shader/vertex.vert",
                      "../learnOpenGL/shader/lamp.frag");
-    unsigned uBlockIndexLight = glad_glGetUniformBlockIndex(lightShader.ID, "Matrices");
-    glUniformBlockBinding(lightShader.ID, uBlockIndexLight, 0);
 
     MShader skyboxShader("../learnOpenGL/shader/skybox.vert",
                      "../learnOpenGL/shader/skybox.frag");
-    unsigned uBlockIndexSky = glad_glGetUniformBlockIndex(skyboxShader.ID, "Matrices");
+    unsigned uBlockIndexSky = glGetUniformBlockIndex(skyboxShader.ID, "Matrices");
     glUniformBlockBinding(skyboxShader.ID, uBlockIndexSky, 0);
 
     MShader photoShader("../learnOpenGL/shader/photo.vert",
                      "../learnOpenGL/shader/photo.frag");
-    unsigned uBlockIndexPhoto = glad_glGetUniformBlockIndex(photoShader.ID, "Matrices");
+    unsigned uBlockIndexPhoto = glGetUniformBlockIndex(photoShader.ID, "Matrices");
     glUniformBlockBinding(photoShader.ID, uBlockIndexPhoto, 0);
 
     MShader reflection("../learnOpenGL/shader/vertex.vert",
                      "../learnOpenGL/shader/reflection.frag");
-    unsigned uBlockIndexRef = glad_glGetUniformBlockIndex(reflection.ID, "Matrices");
-    glUniformBlockBinding(reflection.ID, uBlockIndexRef, 0);
+
+    MShader geomtShader("../learnOpenGL/shader/geometry.vert",
+                     "../learnOpenGL/shader/fragment.frag",
+                     "../learnOpenGL/shader/geometry.geom");
+    unsigned uBlockIndexGeomtM = glGetUniformBlockIndex(geomtShader.ID, "Matrices");
+    glUniformBlockBinding(myShader.ID, uBlockIndexGeomtM, 0);
+    unsigned uBlockIndexGeomtL = glGetUniformBlockIndex(geomtShader.ID, "Lights");
+    glUniformBlockBinding(geomtShader.ID, uBlockIndexGeomtL, 1);
 
     //创建Uniform缓冲对象
     unsigned uboMatrices;
@@ -181,6 +184,14 @@ int main()
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
     //绑定到绑定点0
     glBindBufferBase(GL_UNIFORM_BUFFER, 0, uboMatrices);
+
+    unsigned uboLignts;
+    glGenBuffers(1, &uboLignts);
+    glBindBuffer(GL_UNIFORM_BUFFER, uboLignts);
+    glBufferData(GL_UNIFORM_BUFFER, 8*16+3*4, nullptr, GL_STATIC_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    //绑定到绑定点1
+    glBindBufferBase(GL_UNIFORM_BUFFER, 1, uboLignts);
 
     //视图矩阵
     glm::mat4 view(1.0f);
@@ -195,28 +206,32 @@ int main()
 
     glm::vec3 ambientStrength;//环境光量
     glm::vec3 diffuse;//漫反射量（保持本身颜色）
-    myShader.use();
     //平行光
     glm::vec3 lightStrength(0.6f, 0.6f, 0.6f);//高光（光源）量
     ambientStrength = lightStrength * 0.3f;//环境光量
     diffuse = lightStrength - ambientStrength;//漫反射量（保持本身颜色）
     glm::vec3 parallelDir(-0.2f, -1.0f, 0.3f);//平行光源方向
-    myShader.setUniform3F("SunLight.direction", parallelDir);
-    myShader.setUniform3F("SunLight.ambient", ambientStrength);
-    myShader.setUniform3F("SunLight.diffuse",  diffuse);
-    myShader.setUniform3F("SunLight.specular", lightStrength);
     //点光源
     glm::vec3 pointlightStrength = glm::vec3(1.0f, 1.0f, 1.0f);
     ambientStrength = pointlightStrength * 0.1f;//环境光量
     diffuse = pointlightStrength - ambientStrength;//漫反射量（保持本身颜色）
     glm::vec3 lightPos(0.0f, 0.0f, -1.0f);//光源坐标
-    myShader.setUniform1F("LuminousBody.constant", 1.0f);
-    myShader.setUniform1F("LuminousBody.linear", 0.09f);
-    myShader.setUniform1F("LuminousBody.quadratic", 0.032f);
-    myShader.setUniform3F("LuminousBody.ambient", ambientStrength);
-    myShader.setUniform3F("LuminousBody.diffuse",  diffuse);
-    myShader.setUniform3F("LuminousBody.specular", pointlightStrength);
-    myShader.setUniform3F("LuminousBody.position", lightPos);
+    float constant = 1.0f;
+    float linear = 0.09f;
+    float quadratic = 0.032f;
+
+    glBindBuffer(GL_UNIFORM_BUFFER, uboLignts);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, 16, &parallelDir);
+    glBufferSubData(GL_UNIFORM_BUFFER, 16, 16, &ambientStrength);
+    glBufferSubData(GL_UNIFORM_BUFFER, 32, 16, &diffuse);
+    glBufferSubData(GL_UNIFORM_BUFFER, 48, 16, &lightStrength);
+    glBufferSubData(GL_UNIFORM_BUFFER, 64, 16, &lightPos);
+    glBufferSubData(GL_UNIFORM_BUFFER, 80, 16, &ambientStrength);
+    glBufferSubData(GL_UNIFORM_BUFFER, 96, 16, &diffuse);
+    glBufferSubData(GL_UNIFORM_BUFFER, 112, 16, &pointlightStrength);
+    glBufferSubData(GL_UNIFORM_BUFFER, 128, 4, &constant);
+    glBufferSubData(GL_UNIFORM_BUFFER, 132, 4, &linear);
+    glBufferSubData(GL_UNIFORM_BUFFER, 136, 4, &quadratic);
 
     //加载模型
     Model3d mModel("../learnOpenGL/model/nanosuit/nanosuit.blend");
@@ -255,6 +270,9 @@ int main()
         glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(view));
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
+        glBindBuffer(GL_UNIFORM_BUFFER, uboLignts);
+        glBufferSubData(GL_UNIFORM_BUFFER, 64, 16, &lightPos);
+
         //剔除背面（仅针对闭合形状）
         glEnable(GL_CULL_FACE);
         glFrontFace(GL_CCW);//定义顺时针的面为正向面
@@ -266,7 +284,6 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         //绘制模型至帧缓冲
         myShader.use();
-        myShader.setUniform3F("LuminousBody.position", lightPos);
         myShader.setUniform3F("CameraPos", cameraPos);
         myShader.setUniformMatrix4fv(glm::value_ptr(projection), "projection");
         myShader.setUniformMatrix4fv(glm::value_ptr(identityMat), "view");
@@ -283,16 +300,27 @@ int main()
 
         //绘制模型
         myShader.use();
-        myShader.setUniform3F("LuminousBody.position", lightPos);
         myShader.setUniform3F("CameraPos", cameraPos);
+        myShader.setUniform1F("OneMaterial.shininess", 32.0f);
         myShader.setUniformMatrix4fv(glm::value_ptr(projection), "projection");
         myShader.setUniformMatrix4fv(glm::value_ptr(view), "view");
         model = glm::mat4(1.0f);
         model = glm::translate(model, {0.0f, -2.0f, -3.0f});
         model = glm::scale(model, glm::vec3(0.2f));
         myShader.setUniformMatrix4fv(glm::value_ptr(model), "model");
-        myShader.setUniform1F("OneMaterial.shininess", 32.0f);
         mModel.draw(myShader, GL_TRIANGLES);
+
+        //绘制模型-geametry shader
+        geomtShader.use();
+        geomtShader.setUniform3F("CameraPos", cameraPos);
+        geomtShader.setUniform1F("OneMaterial.shininess", 32.0f);
+        geomtShader.setUniform1F("Time", static_cast<float>(glfwGetTime()));
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, {0.0f, -2.0f, 2.0f});
+        model = glm::scale(model, glm::vec3(0.2f));
+        model = glm::rotate(model, glm::radians(-45.0f), {1.0f, 0.0f, 0.0f});
+        geomtShader.setUniformMatrix4fv(glm::value_ptr(model), "model");
+        mModel.draw(geomtShader, GL_TRIANGLES);
 
         //绘制反射模型
         reflection.use();

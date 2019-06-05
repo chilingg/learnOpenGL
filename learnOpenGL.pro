@@ -28,7 +28,6 @@ unix:!macx: LIBS += -lglfw \
 }
 
 DISTFILES += \
-    shader/geometry.geomt \
     shader/vertex.vert \
     shader/fragment.frag \
     shader/lamp.frag \
@@ -36,7 +35,9 @@ DISTFILES += \
     shader/photo.vert \
     shader/skybox.vert \
     shader/skybox.frag \
-    shader/reflection.frag
+    shader/reflection.frag \
+    shader/geometry.vert \
+    shader/geometry.geom
 
 HEADERS += \
     mshader.h \
