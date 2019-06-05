@@ -21,7 +21,7 @@ uniform mat3 normalMat;
 
 void main(void)
 {
-    vsOut.NormalV = mat3(model) * aNormal;
+    vsOut.NormalV = normalize(normalMat * aNormal);
     vsOut.FragPosV = vec3(model * vec4(aPos, 1.0));
     vsOut.TexCoordV = aTexCoord;
     gl_Position = projection * view * model * vec4(aPos, 1.0);

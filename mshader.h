@@ -18,7 +18,7 @@ public:
     void setUniform3F(const std::string &name, float value1, float value2, float value3) const;
     void setUniform3F(const std::string &name, glm::vec3 vec) const;
     void setUniformMatrix4fv(float *ptr, const char *name) const;
-    void setUniformMatrix3fv(float *ptr, const char *name, bool transpose = false) const;
+    void setUniformMatrix3fv(float *ptr, const char *name) const;
 
     unsigned int ID;
 private:
@@ -71,16 +71,11 @@ inline void MShader::setUniformMatrix4fv(float *ptr, const char *name) const
         std::cerr << "No find uniform location " << name << std::endl;
 }
 
-inline void MShader::setUniformMatrix3fv(float *ptr, const char *name, bool transpose) const
+inline void MShader::setUniformMatrix3fv(float *ptr, const char *name) const
 {
     int loc = glGetUniformLocation(ID, name);
     if(loc != -1)
-    {
-        if(transpose)
-            glUniformMatrix3fv(loc, 1, GL_TRUE, ptr);
-        else
-            glUniformMatrix3fv(loc, 1, GL_FALSE, ptr);
-    }
+        glUniformMatrix3fv(loc, 1, GL_FALSE, ptr);
     else
         std::cerr << "No find uniform location " << name << std::endl;
 }
