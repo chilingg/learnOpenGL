@@ -37,7 +37,9 @@ DISTFILES += \
     shader/skybox.frag \
     shader/reflection.frag \
     shader/geometry.vert \
-    shader/geometry.geom
+    shader/geometry.geom \
+    shader/static.vert \
+    shader/instance.vert
 
 HEADERS += \
     mshader.h \

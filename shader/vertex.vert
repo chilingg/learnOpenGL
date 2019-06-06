@@ -7,9 +7,13 @@ out vec3 Normal;
 out vec3 FragPos;
 out vec2 TexCoord;
 
+//uniform缓冲对象
+layout (std140) uniform Matrices
+{
+    mat4 projection;
+    mat4 view;
+};
 uniform mat4 model;//变换矩阵
-uniform mat4 view;//视图矩阵
-uniform mat4 projection;//投影矩阵
 uniform mat3 normalMat;
 
 void main(void)

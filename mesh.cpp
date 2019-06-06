@@ -15,7 +15,12 @@ Mesh::~Mesh()
 {
 }
 
-void Mesh::draw(const MShader &shader, int promitive, bool notLoadTex) const
+void Mesh::draw(const MShader &shader, unsigned promitive, bool notLoadTex) const
+{
+    drawInstance(shader, 0, promitive, notLoadTex);
+}
+
+void Mesh::drawInstance(const MShader &shader, unsigned acount, unsigned promitive, bool notLoadTex) const
 {
     unsigned int diffuseNr = 1;
     unsigned int specularNr = 1;
@@ -47,7 +52,10 @@ void Mesh::draw(const MShader &shader, int promitive, bool notLoadTex) const
 
     // 绘制网格
     glBindVertexArray(VAO);
-    glDrawElements(promitive, indices.size(), GL_UNSIGNED_INT, nullptr);
+    if(acount == 0)
+        glDrawElements(promitive, indices.size(), GL_UNSIGNED_INT, nullptr);
+    else
+        glDrawElementsInstanced(promitive, indices.size(), GL_UNSIGNED_INT, nullptr, acount);
     glBindVertexArray(0);
 }
 

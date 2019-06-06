@@ -25,8 +25,10 @@ public:
          const std::vector<unsigned> &indices,
          const std::vector<Texture> &textrue);
     ~Mesh();
-    void draw(const MShader &shader, int promitive, bool notLoadTex = false) const;
+    void draw(const MShader &shader, unsigned promitive, bool notLoadTex = false) const;
+    void drawInstance(const MShader &shader, unsigned acount, unsigned promitive, bool notLoadTex = false) const;
     void deleteBuffer() const;
+    void bindVAO() const;
 
     //网格数据
     std::vector<Vertex> vertices;
@@ -37,5 +39,10 @@ private:
     unsigned VAO, VBO, EBO;
     void setupMesh();
 };
+
+inline void Mesh::bindVAO() const
+{
+    glBindVertexArray(VAO);
+}
 
 #endif // MESH_H

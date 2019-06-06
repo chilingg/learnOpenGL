@@ -36,6 +36,9 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 int createCube(unsigned *VAO, unsigned *VBO);
 unsigned loadCubmap(std::vector<std::string> faces);
 
+float getF0to1Rend() { return static_cast<float>(rand()) / RAND_MAX; }
+float getFRend() { return static_cast<float>(rand()) / RAND_MAX * 2 - 1; }
+
 int main()
 {
     //初始化设置GLFW
@@ -79,6 +82,11 @@ int main()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);//设置源与目标的混个因子
     //glDisable(GL_BLEND);
+
+    //加载模型
+    Model3d mModel("../learnOpenGL/model/nanosuit/nanosuit.blend");
+    Model3d planet("../learnOpenGL/model/planet/planet.obj");
+    Model3d rock("../learnOpenGL/model/planet/rock.obj");
 
     //创建点光源
     unsigned lightVAO, lightVBO;
@@ -134,6 +142,50 @@ int main()
     glEnableVertexAttribArray(1);
     glBindVertexArray(0);
 
+    //实例化对象
+    unsigned acount = 1000;
+    glm::mat4 *modelMatrices = new glm::mat4[acount];
+    glm::vec3 planetPos(0.0f, 0.0f, -15.0f);
+    for(unsigned i = 0; i < acount; ++i)
+    {
+        float randSize = getFRend();
+        float yOffset = getFRend() * 0.2f + 0.8f;
+        float zOffset = getFRend() * 1.0f + -5.0f;
+        glm::mat4 model(1.0);
+        model = glm::translate(model, planetPos);
+        model = glm::rotate(model, static_cast<float>(rand()), {0.0f, 1.0f, 0.0f});
+        model = glm::translate(model, glm::vec3(0.0f, yOffset, zOffset));
+        model = glm::rotate(model, static_cast<float>(3.14),
+                            glm::vec3(getF0to1Rend(), getF0to1Rend(), getF0to1Rend()));
+        model = glm::scale(model, randSize*glm::vec3(0.04f)+glm::vec3(0.05f));
+
+        modelMatrices[i] = model;
+    }
+    unsigned matBuffer;
+    glGenBuffers(1, &matBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, matBuffer);
+    glBufferData(GL_ARRAY_BUFFER, acount*sizeof(glm::mat4), &modelMatrices[0], GL_STATIC_DRAW);
+    for(unsigned i = 0; i < rock.meshesSize(); ++i)
+    {
+        rock.getMeshe(i).bindVAO();
+        GLsizei vec4Size = sizeof(glm::vec4);
+        glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 4*vec4Size, nullptr);
+        glEnableVertexAttribArray(3);
+        glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 4*vec4Size, reinterpret_cast<void*>(vec4Size));
+        glEnableVertexAttribArray(4);
+        glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 4*vec4Size, reinterpret_cast<void*>(2*vec4Size));
+        glEnableVertexAttribArray(5);
+        glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, 4*vec4Size, reinterpret_cast<void*>(3*vec4Size));
+        glEnableVertexAttribArray(6);
+        //顶点arg1每arg2个实例更新一次（0表示每次顶点迭代都更新）
+        glVertexAttribDivisor(3, 1);
+        glVertexAttribDivisor(4, 1);
+        glVertexAttribDivisor(5, 1);
+        glVertexAttribDivisor(6, 1);
+
+        glBindVertexArray(0);
+    }
+
     std::vector<std::string> faces
     {
         "../learnOpenGL/texture/skybox/right.jpg",
@@ -149,8 +201,10 @@ int main()
 
     MShader myShader("../learnOpenGL/shader/vertex.vert",
                      "../learnOpenGL/shader/fragment.frag");
-    unsigned uBlockIndexMy = glGetUniformBlockIndex(myShader.ID, "Lights");
-    glUniformBlockBinding(myShader.ID, uBlockIndexMy, 1);
+    unsigned uBlockIndexMyM = glGetUniformBlockIndex(myShader.ID, "Matrices");
+    glUniformBlockBinding(myShader.ID, uBlockIndexMyM, 0);
+    unsigned uBlockIndexMyL = glGetUniformBlockIndex(myShader.ID, "Lights");
+    glUniformBlockBinding(myShader.ID, uBlockIndexMyL, 1);
 
     MShader lightShader("../learnOpenGL/shader/vertex.vert",
                      "../learnOpenGL/shader/lamp.frag");
@@ -175,6 +229,18 @@ int main()
     glUniformBlockBinding(geomtShader.ID, uBlockIndexGeomtM, 0);
     unsigned uBlockIndexGeomtL = glGetUniformBlockIndex(geomtShader.ID, "Lights");
     glUniformBlockBinding(geomtShader.ID, uBlockIndexGeomtL, 1);
+
+    MShader staticShader("../learnOpenGL/shader/static.vert",
+                     "../learnOpenGL/shader/fragment.frag");
+    unsigned uBlockIndexStaticL = glGetUniformBlockIndex(staticShader.ID, "Lights");
+    glUniformBlockBinding(staticShader.ID, uBlockIndexStaticL, 1);
+
+    MShader instanceShader("../learnOpenGL/shader/instance.vert",
+                     "../learnOpenGL/shader/fragment.frag");
+    unsigned uBlockIndexInstanceM = glGetUniformBlockIndex(instanceShader.ID, "Matrices");
+    glUniformBlockBinding(instanceShader.ID, uBlockIndexInstanceM, 0);
+    unsigned uBlockIndexInstanceL = glGetUniformBlockIndex(instanceShader.ID, "Lights");
+    glUniformBlockBinding(instanceShader.ID, uBlockIndexInstanceL, 1);
 
     //创建Uniform缓冲对象
     unsigned uboMatrices;
@@ -208,14 +274,14 @@ int main()
     glm::vec3 diffuse;//漫反射量（保持本身颜色）
     //平行光
     glm::vec3 lightStrength(0.6f, 0.6f, 0.6f);//高光（光源）量
-    ambientStrength = lightStrength * 0.3f;//环境光量
+    ambientStrength = lightStrength * 0.6f;//环境光量
     diffuse = lightStrength - ambientStrength;//漫反射量（保持本身颜色）
     glm::vec3 parallelDir(-0.2f, -1.0f, 0.3f);//平行光源方向
     //点光源
     glm::vec3 pointlightStrength = glm::vec3(1.0f, 1.0f, 1.0f);
     ambientStrength = pointlightStrength * 0.1f;//环境光量
     diffuse = pointlightStrength - ambientStrength;//漫反射量（保持本身颜色）
-    glm::vec3 lightPos(0.0f, 0.0f, -1.0f);//光源坐标
+    glm::vec3 lightPos(0.0f, 0.0f, -3.0f);//光源坐标
     float constant = 1.0f;
     float linear = 0.09f;
     float quadratic = 0.032f;
@@ -232,9 +298,6 @@ int main()
     glBufferSubData(GL_UNIFORM_BUFFER, 128, 4, &constant);
     glBufferSubData(GL_UNIFORM_BUFFER, 132, 4, &linear);
     glBufferSubData(GL_UNIFORM_BUFFER, 136, 4, &quadratic);
-
-    //加载模型
-    Model3d mModel("../learnOpenGL/model/nanosuit/nanosuit.blend");
 
     //渲染循环
     while(!glfwWindowShouldClose(window))
@@ -283,18 +346,17 @@ int main()
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         //绘制模型至帧缓冲
-        myShader.use();
-        myShader.setUniform3F("CameraPos", cameraPos);
-        myShader.setUniformMatrix4fv(glm::value_ptr(projection), "projection");
-        myShader.setUniformMatrix4fv(glm::value_ptr(identityMat), "view");
+        staticShader.use();
+        staticShader.setUniform3F("CameraPos", cameraPos);
+        staticShader.setUniformMatrix4fv(glm::value_ptr(projection), "projection");
         model = glm::mat4(1.0f);
         model = glm::translate(model, {0.0f, -2.0f, -3.0f});
         model = glm::scale(model, glm::vec3(0.2f));
-        myShader.setUniformMatrix4fv(glm::value_ptr(model), "model");
+        staticShader.setUniformMatrix4fv(glm::value_ptr(model), "model");
         normalMat = glm::transpose(glm::inverse(glm::mat3(model)));
-        myShader.setUniformMatrix3fv(glm::value_ptr(normalMat), "normalMat");
-        myShader.setUniform1F("OneMaterial.shininess", 32.0f);
-        mModel.draw(myShader, GL_TRIANGLES);
+        staticShader.setUniformMatrix3fv(glm::value_ptr(normalMat), "normalMat");
+        staticShader.setUniform1F("OneMaterial.shininess", 32.0f);
+        mModel.draw(staticShader, GL_TRIANGLES);
         //返回默认帧缓冲
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -304,15 +366,26 @@ int main()
         myShader.use();
         myShader.setUniform3F("CameraPos", cameraPos);
         myShader.setUniform1F("OneMaterial.shininess", 32.0f);
-        myShader.setUniformMatrix4fv(glm::value_ptr(projection), "projection");
-        myShader.setUniformMatrix4fv(glm::value_ptr(view), "view");
         model = glm::mat4(1.0f);
-        model = glm::translate(model, {0.0f, -2.0f, -3.0f});
+        model = glm::translate(model, {0.0f, -2.0f, -5.0f});
         model = glm::scale(model, glm::vec3(0.2f));
         myShader.setUniformMatrix4fv(glm::value_ptr(model), "model");
         normalMat = glm::transpose(glm::inverse(glm::mat3(model)));
         myShader.setUniformMatrix3fv(glm::value_ptr(normalMat), "normalMat");
         mModel.draw(myShader, GL_TRIANGLES);
+        //绘制行星
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, planetPos);
+        myShader.setUniformMatrix4fv(glm::value_ptr(model), "model");
+        normalMat = glm::transpose(glm::inverse(glm::mat3(model)));
+        myShader.setUniformMatrix3fv(glm::value_ptr(normalMat), "normalMat");
+        planet.draw(myShader, GL_TRIANGLES);
+        //绘制陨石带
+        instanceShader.use();
+        instanceShader.setUniform3F("CameraPos", cameraPos);
+        instanceShader.setUniform1F("OneMaterial.shininess", 32.0f);
+        //rock.draw(instanceShader, GL_TRIANGLES);
+        rock.drawInstance(instanceShader, acount, GL_TRIANGLES);
 
         //绘制模型-geametry shader
         geomtShader.use();
@@ -320,7 +393,7 @@ int main()
         geomtShader.setUniform1F("OneMaterial.shininess", 32.0f);
         geomtShader.setUniform1F("Time", static_cast<float>(glfwGetTime()));
         model = glm::mat4(1.0f);
-        model = glm::translate(model, {0.0f, -2.0f, 2.0f});
+        model = glm::translate(model, {-2.0f, -2.0f, -5.0f});
         model = glm::scale(model, glm::vec3(0.2f));
         geomtShader.setUniformMatrix4fv(glm::value_ptr(model), "model");
         normalMat = glm::transpose(glm::inverse(glm::mat3(model)));
@@ -331,11 +404,9 @@ int main()
         reflection.use();
         //std::cout << cameraPos.x << cameraPos.y << cameraPos.z << std::endl;
         reflection.setUniform3F("CameraPos", cameraPos);
-        reflection.setUniformMatrix4fv(glm::value_ptr(projection), "projection");
-        reflection.setUniformMatrix4fv(glm::value_ptr(view), "view");
         glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
         model = glm::mat4(1.0f);
-        model = glm::translate(model, {2.0f, -2.0f, -3.0f});
+        model = glm::translate(model, {2.0f, -2.0f, -5.0f});
         model = glm::scale(model, glm::vec3(0.2f));
         reflection.setUniformMatrix4fv(glm::value_ptr(model), "model");
         normalMat = glm::transpose(glm::inverse(glm::mat3(model)));
@@ -346,8 +417,6 @@ int main()
         glFrontFace(GL_CW);//定义顺时针的面为正向面
         lightShader.use();
         lightShader.setUniform3F("lightColor", 0.3f+pointlightStrength);
-        lightShader.setUniformMatrix4fv(glm::value_ptr(projection), "projection");
-        lightShader.setUniformMatrix4fv(glm::value_ptr(view), "view");
         model = glm::mat4(1.0f);
         model = glm::translate(model, lightPos);
         model = glm::scale(model, glm::vec3(0.05f));
@@ -363,8 +432,7 @@ int main()
         glBindVertexArray(photoVAO);
         photoShader.use();
         model = glm::mat4(1.0f);
-        model = glm::translate(model, {-1.0f, 0.0f, -2.0f});
-        model = glm::rotate(model, glm::radians(30.0f), {0.0f, 1.0f, 0.0f});
+        model = glm::translate(model, {0.0f, -1.0f, -4.0f});
         photoShader.setUniformMatrix4fv(glm::value_ptr(model), "model");
         glBindTexture(GL_TEXTURE_2D, texColorBuffer);
         glDrawArrays(GL_TRIANGLES, 0, 6);

@@ -7,6 +7,18 @@ void Model3d::deleteBuffer()
         mesh.deleteBuffer();
 }
 
+void Model3d::draw(MShader shader, unsigned primitive, bool notLoadTex)
+{
+    for(unsigned int i = 0; i < meshes.size(); i++)
+        meshes[i].draw(shader, primitive, notLoadTex);
+}
+
+void Model3d::drawInstance(MShader shader, unsigned acount, unsigned primitive, bool notLoadTex)
+{
+    for(unsigned int i = 0; i < meshes.size(); i++)
+        meshes[i].drawInstance(shader, acount, primitive, notLoadTex);
+}
+
 void Model3d::loadModel(const std::string &path)
 {
     Assimp::Importer import;

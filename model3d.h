@@ -24,7 +24,10 @@ class Model3d
         /*  函数   */
         Model3d(const char *path) { loadModel(path); }
         void deleteBuffer();
-        void draw(MShader shader, int primitive, bool notLoadTex = false);
+        void draw(MShader shader, unsigned primitive, bool notLoadTex = false);
+        void drawInstance(MShader shader, unsigned acount, unsigned primitive, bool notLoadTex = false);
+        std::vector<Mesh>::size_type meshesSize() const;
+        const Mesh& getMeshe(std::vector<Mesh>::size_type index) const;
 
     private:
         /*  模型数据  */
@@ -39,10 +42,14 @@ class Model3d
                                                         std::string typeName);
 };
 
-inline void Model3d::draw(MShader shader, int primitive, bool notLoadTex)
+inline std::vector<Mesh>::size_type Model3d::meshesSize() const
 {
-    for(unsigned int i = 0; i < meshes.size(); i++)
-        meshes[i].draw(shader, primitive, notLoadTex);
+    return meshes.size();
+}
+
+inline const Mesh &Model3d::getMeshe(std::vector<Mesh>::size_type index) const
+{
+    return meshes[index];
 }
 
 #endif // MODEL3D_H
