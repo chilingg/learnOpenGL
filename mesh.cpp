@@ -42,7 +42,7 @@ void Mesh::drawInstance(const MShader &shader, unsigned acount, unsigned promiti
                 else if(name == "texture_specular")
                     number = std::to_string(specularNr++);
 
-                shader.setUniform1F(("OneMaterial." + name + number).c_str(), i);
+                shader.setUniform1I(("OneMaterial." + name + number).c_str(), static_cast<int>(i));
                 glBindTexture(GL_TEXTURE_2D, textures[i].id);
             }
             shader.setUniform3F("OneMaterial.objColor", glm::vec3(0.0));

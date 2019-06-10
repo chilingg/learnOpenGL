@@ -15,7 +15,8 @@ SOURCES += \
 
 win32{
 LIBS += -L$$PWD/../bin/libs/ -lglfw3 \
-    -L$$PWD/../bin/libs/ -lassimp
+    -L$$PWD/../bin/libs/ -lassimp \
+    -L$$PWD/../bin/libs/ -lfreetype
 
 INCLUDEPATH += $$PWD/../bin/include
 DEPENDPATH += $$PWD/../bin/include

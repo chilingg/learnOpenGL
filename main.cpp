@@ -11,6 +11,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 //Window size
 constexpr float SCR_WIDTH = 800;
@@ -36,8 +38,11 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 int createCube(unsigned *VAO, unsigned *VBO);
 unsigned loadCubmap(std::vector<std::string> faces);
 
-float getF0to1Rend() { return static_cast<float>(rand()) / RAND_MAX; }
-float getFRend() { return static_cast<float>(rand()) / RAND_MAX * 2 - 1; }
+float getF0to1Rand() { return static_cast<float>(rand()) / RAND_MAX; }
+float getFRand() { return static_cast<float>(rand()) / RAND_MAX * 2 - 1; }
+
+GLenum _glCheckError_(const char *file, const int line);
+#define glCheckError() _glCheckError_(__FILE__, __LINE__)
 
 int main()
 {
@@ -145,18 +150,18 @@ int main()
     //实例化对象
     unsigned acount = 1000;
     glm::mat4 *modelMatrices = new glm::mat4[acount];
-    glm::vec3 planetPos(0.0f, 0.0f, -15.0f);
+    glm::vec3 planetPos(0.0f, 3.0f, -20.0f);
     for(unsigned i = 0; i < acount; ++i)
     {
-        float randSize = getFRend();
-        float yOffset = getFRend() * 0.2f + 0.8f;
-        float zOffset = getFRend() * 1.0f + -5.0f;
+        float randSize = getFRand();
+        float yOffset = getFRand() * 0.2f + 0.8f;
+        float zOffset = getFRand() * 1.0f + -5.0f;
         glm::mat4 model(1.0);
         model = glm::translate(model, planetPos);
         model = glm::rotate(model, static_cast<float>(rand()), {0.0f, 1.0f, 0.0f});
         model = glm::translate(model, glm::vec3(0.0f, yOffset, zOffset));
         model = glm::rotate(model, static_cast<float>(3.14),
-                            glm::vec3(getF0to1Rend(), getF0to1Rend(), getF0to1Rend()));
+                            glm::vec3(getF0to1Rand(), getF0to1Rand(), getF0to1Rand()));
         model = glm::scale(model, randSize*glm::vec3(0.04f)+glm::vec3(0.05f));
 
         modelMatrices[i] = model;
@@ -299,6 +304,7 @@ int main()
     glBufferSubData(GL_UNIFORM_BUFFER, 132, 4, &linear);
     glBufferSubData(GL_UNIFORM_BUFFER, 136, 4, &quadratic);
 
+    FT_Library ft;
     //渲染循环
     while(!glfwWindowShouldClose(window))
     {
@@ -339,6 +345,8 @@ int main()
         //剔除背面（仅针对闭合形状）
         glEnable(GL_CULL_FACE);
         glFrontFace(GL_CCW);//定义顺时针的面为正向面
+
+        glCheckError();
 
         //使用帧缓冲
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
@@ -449,6 +457,7 @@ int main()
         glBindVertexArray(0);
         glDepthMask(GL_TRUE);
 
+        glCheckError();
         //检查并调用事件，交换缓冲----
         //交换颜色缓冲（它是一个储存着GLFW窗口每一个像素颜色值的大缓冲），它在这一迭代中被用来绘制
         glfwSwapBuffers(window);
@@ -621,4 +630,39 @@ int createCube(unsigned *VAO, unsigned *VBO)
     glBindVertexArray(0);
 
     return sizeof(vertices)/sizeof(float)/3;
+}
+
+GLenum _glCheckError_(const char *file, const int line)
+{
+    GLenum errorCode;
+    while((errorCode = glGetError()) != GL_NO_ERROR)
+    {
+        std::string error;
+        switch(errorCode)
+        {
+        case GL_INVALID_ENUM:
+            error = "INVALID_ENUM";
+            break;
+        case GL_INVALID_VALUE:
+            error = "INVALID_VALUE";
+            break;
+        case GL_INVALID_OPERATION:
+            error = "INVALID_OPERATION";
+            break;
+        case GL_STACK_OVERFLOW:
+            error = "STACK_OVERFLOW";
+            break;
+        case GL_STACK_UNDERFLOW:
+            error = "STACK_UNDERFLOW";
+            break;
+        case GL_OUT_OF_MEMORY:
+            error = "OUT_OF_MEMORY";
+            break;
+        case GL_INVALID_FRAMEBUFFER_OPERATION:
+            error = "INVALID_FRAMEBUFFER_OPERATION";
+            break;
+        }
+        std::cout << error << " | " << file << " (" << line << ") " << std::endl;
+    }
+    return  errorCode;
 }
