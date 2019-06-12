@@ -11,7 +11,8 @@ SOURCES += \
     mmatrix.cpp \
     mesh.cpp \
     model3d.cpp \
-    stb_image_implementatio.cpp
+    stb_image_implementatio.cpp \
+    mcharacter.cpp
 
 win32{
 LIBS += -L$$PWD/../bin/libs/ -lglfw3 \
@@ -40,7 +41,9 @@ DISTFILES += \
     shader/geometry.vert \
     shader/geometry.geom \
     shader/static.vert \
-    shader/instance.vert
+    shader/instance.vert \
+    shader/font.vert \
+    shader/font.frag
 
 HEADERS += \
     mshader.h \
@@ -48,7 +51,8 @@ HEADERS += \
     mmatrix.h \
     mesh.h \
     model3d.h \
-    stb_image.h
+    stb_image.h \
+    mcharacter.h
 
 RESOURCES +=
 

@@ -1,18 +1,18 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <map>
 #include <iostream>
 #include <cmath>
 #include <fstream>
 #include "mshader.h"
 #include "model3d.h"
 #include "stb_image.h"
+#include "mcharacter.h"
 //#include "mmatrix.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <ft2build.h>
-#include FT_FREETYPE_H
 
 //Window size
 constexpr float SCR_WIDTH = 800;
@@ -247,6 +247,13 @@ int main()
     unsigned uBlockIndexInstanceL = glGetUniformBlockIndex(instanceShader.ID, "Lights");
     glUniformBlockBinding(instanceShader.ID, uBlockIndexInstanceL, 1);
 
+    MShader fontShader("../learnOpenGL/shader/font.vert",
+                       "../learnOpenGL/shader/font.frag");
+
+    //字母集
+    MCharacter characters("../learnOpenGL/fonts/SourceHanSerifSC-Regular.otf");
+    glm::mat4 charProjection = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f);
+
     //创建Uniform缓冲对象
     unsigned uboMatrices;
     glGenBuffers(1, &uboMatrices);
@@ -304,7 +311,6 @@ int main()
     glBufferSubData(GL_UNIFORM_BUFFER, 132, 4, &linear);
     glBufferSubData(GL_UNIFORM_BUFFER, 136, 4, &quadratic);
 
-    FT_Library ft;
     //渲染循环
     while(!glfwWindowShouldClose(window))
     {
@@ -456,6 +462,12 @@ int main()
         glDrawArrays(GL_TRIANGLES, 0, skyPNumber);
         glBindVertexArray(0);
         glDepthMask(GL_TRUE);
+
+        //绘制文字
+        fontShader.use();
+        fontShader.setUniformMatrix4fv(glm::value_ptr(charProjection), "projection");
+        characters.RenderText(fontShader, "This is sample text", glm::vec2(25.0f, 25.0f), 0.7f, glm::vec3(0.7, 0.9f, 0.4f));
+        characters.RenderText(fontShader, "(C) LearnOpenGL.com", glm::vec2(580.0f, 570.0f), 0.3f, glm::vec3(0.5, 0.9f, 1.0f));
 
         glCheckError();
         //检查并调用事件，交换缓冲----
