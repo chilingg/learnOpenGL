@@ -1,0 +1,3 @@
+[submodule "redopera"]
+	path = redopera
+	url = git@github.com:chilingg/redopera
