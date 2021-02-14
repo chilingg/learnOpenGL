@@ -5,6 +5,8 @@ project(LearnOpenGL)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+add_definitions(-DROOT_DIR="${PROJECT_SOURCE_DIR}/")
+
 find_file(REDOPERA redopera/CMakeLists.txt .)
 if(REDOPERA)
 	add_subdirectory(redopera redopera)
@@ -13,5 +15,3 @@ if(REDOPERA)
 endif()
 
 add_subdirectory(learn learn)
-
-

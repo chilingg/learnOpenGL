@@ -1,4 +1,5 @@
 #include <RGame.h>
+#include <RWindow.h>
 #include <RResource.h>
 
 using namespace Redopera;
@@ -51,8 +52,7 @@ void start()
 {
     glClearColor(1.f, 0.f, 0.f, 1.f);
 
-    RShader vs(":/shaders/uniform.vert", RShader::Type::Vertex);
-    RShaders shaders = { vs,
+    RShaders shaders = { RShader(":/shaders/uniform.vert", RShader::Type::Vertex),
                          RShader(":/shaders/uniform.frag", RShader::Type::Fragment) };
     // rpi保持shaders的use状态直到析构
     RRPI rpi = shaders.use();
@@ -113,6 +113,12 @@ void start()
     glBufferData(GL_UNIFORM_BUFFER, uboSize, buf.get(), GL_STATIC_DRAW);
 
     glBindBufferBase(GL_UNIFORM_BUFFER, uboIndex, ubo);
+
+    /*
+     *
+     * ......
+     *
+     */
 }
 
 int main()
